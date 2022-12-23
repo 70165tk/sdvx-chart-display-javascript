@@ -45,6 +45,7 @@
     let TotalHeight;//画像全体の高さ　譜面の長さを参照して変動
     let TotalWidth;//画像全体の幅　レーザーのはみ出し度合いを参照して変動
     let LowerMargin;//RANGEの指定の有無によって、RANGEの開始タイミングとConst.MARGIN_HEIGHT_LOWERのどちらかになる値
+    let StartTiming;//図の原点に対応する譜面上のタイミング　RANGEの指定があればその値、なければ0から
     //分数クラス
     class Fraction {
         constructor(...args) {
@@ -121,10 +122,12 @@
             const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))//[[レーザーの形,終点タイミング,終点レーン位置],[レーザーの形,終点タイミング,終点レーン位置],…]
             let last_pos
             if (range_data.length > 0) {
+                StartTiming = Fraction.stringToNumber(range_data[0][0])
                 TotalHeight = Const.BAR_HEIGHT * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
                 LowerMargin = Fraction.stringToNumber(range_data[0][0])
             }
             else {
+                StartTiming = 0
                 const all_data = [...meter_pos_data, ...bpm_data, ...long_data, ...chip_data, ...vol_point_data]
                 last_pos =
                     Fraction.Max(...
@@ -164,11 +167,11 @@
 
     function setTransform(ctx, forVolL, forVolR) {
         if (forVolL) {//原点を左下に
-            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight - LowerMargin);//左端を原点にする
+            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//左端を原点にする
         } else if (forVolR) {//原点を右下に
-            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight - LowerMargin);//右端を原点にする
+            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//右端を原点にする
         } else {//原点を中央下に
-            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
+            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
         }
     }
     function drawBackground(ctx, data) {//背景を描く
