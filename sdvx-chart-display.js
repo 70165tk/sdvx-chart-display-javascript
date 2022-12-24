@@ -332,24 +332,24 @@
     }
     function placeLongs(ctx, data) {//ロングノーツ描画
         data.forEach(d => {//FXを描くループ
-            if (d[0].includes("L")) {
+            if (d[0].includes(ButtonNames["L"])) {
                 placeLongFX(ctx, "L", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
-            if (d[0].includes("R")) {
+            if (d[0].includes(ButtonNames["R"])) {
                 placeLongFX(ctx, "R", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
         })
         data.forEach(d => {//BTを描くループ
-            if (d[0].includes("A")) {
+            if (d[0].includes(ButtonNames["A"])) {
                 placeLongBT(ctx, "A", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
-            if (d[0].includes("B")) {
+            if (d[0].includes(ButtonNames["B"])) {
                 placeLongBT(ctx, "B", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
-            if (d[0].includes("C")) {
+            if (d[0].includes(ButtonNames["C"])) {
                 placeLongBT(ctx, "C", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
-            if (d[0].includes("D")) {
+            if (d[0].includes(ButtonNames["D"])) {
                 placeLongBT(ctx, "D", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
         })
@@ -358,12 +358,12 @@
         data.forEach(point_data => {//point_data:1つながりのつまみの折れ目ごとの形状データ
             const strokePath = new Path2D()
             const fillPath = new Path2D()
-            if (point_data[0][0] != "L" && point_data[0][0] != "R") { console.error("レーザー開始点の情報がありません") }
+            if (point_data[0][0] != DeviceNames["L"] && point_data[0][0] != DeviceNames["R"]) { console.error("レーザー開始点の情報がありません") }
             let previous
             let previousVerticalStartLane
             point_data.forEach((d => {
                 //始点
-                if (d[0] == "L" || d[0] == "R") {
+                if (d[0] == DeviceNames["L"] || d[0] == DeviceNames["R"]) {
                     const startPos = Fraction.stringToNumber(d[1])
                     const startLane = Number(d[2])
                     //始点の下につくマークの描画位置
@@ -376,11 +376,11 @@
                     const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const startLargerX = startSmallerX + Const.LASER_WIDTH
                     const startY = Const.BAR_HEIGHT * startPos
-                    if (d[0] == "L") {
+                    if (d[0] == DeviceNames["L"]) {
                         setTransform(ctx, true, false);//左端を原点にする
                         ctx.fillStyle = Const.VOL_L_COLOR
                         ctx.strokeStyle = Const.VOL_L_BORDER_COLOR
-                    } else if (d[0] == "R") {
+                    } else if (d[0] == DeviceNames["R"]) {
                         setTransform(ctx, false, true);//右端を原点にする
                         ctx.fillStyle = Const.VOL_R_COLOR
                         ctx.strokeStyle = Const.VOL_R_BORDER_COLOR
@@ -686,7 +686,7 @@
     function placeChips(ctx, data) {//チップノーツの描画
         const hashOfChipFX = {}//FXチップの上に乗ったBTチップを小さく表示するための連想配列
         data.forEach(d => {
-            if (d[0].includes("L") && !d[0].includes("LSE")) {
+            if (d[0].includes(ButtonNames["L"]) && !d[0].includes(ButtonNames["L"]+"SE")) {
                 placeChipFX(ctx, "L", Fraction.stringToNumber(d[1]), false)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -702,7 +702,7 @@
                     hashOfChipFX[d[1]] = "L"
                 }
             }
-            if (d[0].includes("R") && !d[0].includes("RSE")) {
+            if (d[0].includes(ButtonNames["R"]) && !d[0].includes(ButtonNames["R"]+"SE")) {
                 placeChipFX(ctx, "R", Fraction.stringToNumber(d[1]), false)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -717,7 +717,7 @@
                     hashOfChipFX[d[1]] = "R"
                 }
             }
-            if (d[0].includes("LSE")) {
+            if (d[0].includes(ButtonNames["L"]+"SE")) {
                 placeChipFX(ctx, "L", Fraction.stringToNumber(d[1]), true)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -732,7 +732,7 @@
                     hashOfChipFX[d[1]] = "L"
                 }
             }
-            if (d[0].includes("RSE")) {
+            if (d[0].includes(ButtonNames["R"]+"SE")) {
                 placeChipFX(ctx, "R", Fraction.stringToNumber(d[1]), true)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -749,7 +749,7 @@
             }
         })
         data.forEach(d => {
-            if (d[0].includes("A")) {
+            if (d[0].includes(ButtonNames["A"])) {
                 let fxExists = false
                 const posFraction = new Fraction(d[1])
                 //タイミングをキーとして、同じタイミングのキーがすでに追加されており、それが重なる位置のFXチップであればBTの幅を小さくする
@@ -761,7 +761,7 @@
                 })
                 placeChipBT(ctx, "A", Fraction.stringToNumber(d[1]), fxExists)
             }
-            if (d[0].includes("B")) {
+            if (d[0].includes(ButtonNames["B"])) {
                 let fxExists = false
                 const posFraction = new Fraction(d[1])
                 Object.keys(hashOfChipFX).forEach(k => {
@@ -772,7 +772,7 @@
                 })
                 placeChipBT(ctx, "B", Fraction.stringToNumber(d[1]), fxExists)
             }
-            if (d[0].includes("C")) {
+            if (d[0].includes(ButtonNames["C"])) {
                 let fxExists = false
                 const posFraction = new Fraction(d[1])
                 Object.keys(hashOfChipFX).forEach(k => {
@@ -783,7 +783,7 @@
                 })
                 placeChipBT(ctx, "C", Fraction.stringToNumber(d[1]), fxExists)
             }
-            if (d[0].includes("D")) {
+            if (d[0].includes(ButtonNames["D"])) {
                 let fxExists = false
                 const posFraction = new Fraction(d[1])
                 Object.keys(hashOfChipFX).forEach(k => {
