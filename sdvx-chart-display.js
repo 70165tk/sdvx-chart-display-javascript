@@ -167,32 +167,31 @@
             if (color_data.length > 0 && color_data[0].length >= 2) {
 
                 VolColors = {
-                    L: color_data[0][0] ==
-                        "B" ? Const.VOL_L_COLOR :
-                        "R" ? Const.VOL_R_COLOR :
-                            "G" ? Const.VOL_G_COLOR :
-                                "Y" ? Const.VOL_Y_COLOR :
+                    L: color_data[0][0] == "B" ? Const.VOL_L_COLOR :
+                        color_data[0][0] == "R" ? Const.VOL_R_COLOR :
+                            color_data[0][0] == "G" ? Const.VOL_G_COLOR :
+                                color_data[0][0] == "Y" ? Const.VOL_Y_COLOR :
                                     Const.VOL_L_COLOR,
                     R: color_data[0][1] ==
                         "B" ? Const.VOL_L_COLOR :
-                        "R" ? Const.VOL_R_COLOR :
-                            "G" ? Const.VOL_G_COLOR :
-                                "Y" ? Const.VOL_Y_COLOR :
+                        color_data[0][1] == "R" ? Const.VOL_R_COLOR :
+                            color_data[0][1] == "G" ? Const.VOL_G_COLOR :
+                                color_data[0][1] == "Y" ? Const.VOL_Y_COLOR :
                                     Const.VOL_R_COLOR,
                 }
                 VolBorderColors = {
-                    
+
                     L: color_data[0][0] ==
                         "B" ? Const.VOL_L_BORDER_COLOR :
-                        "R" ? Const.VOL_R_BORDER_COLOR :
-                            "G" ? Const.VOL_G_BORDER_COLOR :
-                                "Y" ? Const.VOL_Y_BORDER_COLOR :
+                        color_data[0][0] == "R" ? Const.VOL_R_BORDER_COLOR :
+                            color_data[0][0] == "G" ? Const.VOL_G_BORDER_COLOR :
+                                color_data[0][0] == "Y" ? Const.VOL_Y_BORDER_COLOR :
                                     Const.VOL_L_BORDER_COLOR,
                     R: color_data[0][1] ==
                         "B" ? Const.VOL_L_BORDER_COLOR :
-                        "R" ? Const.VOL_R_BORDER_COLOR :
-                            "G" ? Const.VOL_G_BORDER_COLOR :
-                                "Y" ? Const.VOL_Y_BORDER_COLOR :
+                        color_data[0][1] == "R" ? Const.VOL_R_BORDER_COLOR :
+                            color_data[0][1] == "G" ? Const.VOL_G_BORDER_COLOR :
+                                color_data[0][1] == "Y" ? Const.VOL_Y_BORDER_COLOR :
                                     Const.VOL_R_BORDER_COLOR,
                 }
             } else {
@@ -686,7 +685,7 @@
     function placeChips(ctx, data) {//チップノーツの描画
         const hashOfChipFX = {}//FXチップの上に乗ったBTチップを小さく表示するための連想配列
         data.forEach(d => {
-            if (d[0].includes(ButtonNames["L"]) && !d[0].includes(ButtonNames["L"]+"SE")) {
+            if (d[0].includes(ButtonNames["L"]) && !d[0].includes(ButtonNames["L"] + "SE")) {
                 placeChipFX(ctx, "L", Fraction.stringToNumber(d[1]), false)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -702,7 +701,7 @@
                     hashOfChipFX[d[1]] = "L"
                 }
             }
-            if (d[0].includes(ButtonNames["R"]) && !d[0].includes(ButtonNames["R"]+"SE")) {
+            if (d[0].includes(ButtonNames["R"]) && !d[0].includes(ButtonNames["R"] + "SE")) {
                 placeChipFX(ctx, "R", Fraction.stringToNumber(d[1]), false)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -717,7 +716,7 @@
                     hashOfChipFX[d[1]] = "R"
                 }
             }
-            if (d[0].includes(ButtonNames["L"]+"SE")) {
+            if (d[0].includes(ButtonNames["L"] + "SE")) {
                 placeChipFX(ctx, "L", Fraction.stringToNumber(d[1]), true)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
@@ -732,7 +731,7 @@
                     hashOfChipFX[d[1]] = "L"
                 }
             }
-            if (d[0].includes(ButtonNames["R"]+"SE")) {
+            if (d[0].includes(ButtonNames["R"] + "SE")) {
                 placeChipFX(ctx, "R", Fraction.stringToNumber(d[1]), true)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
