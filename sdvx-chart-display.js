@@ -30,6 +30,10 @@
         static VOL_L_BORDER_COLOR = "rgb(0, 255, 255)"
         static VOL_R_COLOR = "rgba(255, 0, 127, 0.6)"
         static VOL_R_BORDER_COLOR = "rgb(255, 127, 255)"
+        static VOL_G_COLOR = "rgba(0, 255, 127, 0.6)"
+        static VOL_G_BORDER_COLOR = "rgb(127, 255, 127)"
+        static VOL_Y_COLOR = "rgba(255, 255, 0, 0.6)"
+        static VOL_Y_BORDER_COLOR = "rgb(255, 255, 127)"
         static LONG_FX_COLOR = "rgba(255,102,0,0.8)"
         static LONG_BT_COLOR = "#fff"
         static CHIP_FX_SE_COLOR = "#fa0"
@@ -46,6 +50,11 @@
     let TotalWidth;//画像全体の幅　レーザーのはみ出し度合いを参照して変動
     let LowerMargin;//RANGEの指定の有無によって、RANGEの開始タイミングとConst.MARGIN_HEIGHT_LOWERのどちらかになる値
     let StartTiming;//図の原点に対応する譜面上のタイミング　RANGEの指定があればその値、なければ0から
+    let BarHeight;//1小節の高さ
+    let VolColors;//レーザーの色を指定する連想配列
+    let VolBorderColors;//レーザーの縁の色を指定する連想配列
+    let ButtonNames;//ButtonNames["A"]はBT-Aのレーンに描画すべきデータに付けられている名前(正規なら"A"、ミラーなら"D")
+    let DeviceNames;//ButtonNamesのつまみ版
     //分数クラス
     class Fraction {
         constructor(...args) {
@@ -113,6 +122,9 @@
                     .map((st) => st.trim())
                     .filter((st) => st)
                 )//スペースとsplit後の空文字をここで削除しているため、スペースや余分な区切り文字を入れても機能する
+            const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
+            const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
+            const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
             const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))//[[開始タイミング,終了タイミング]]
             const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))//[[拍子,タイミング],[拍子,タイミング],…]
             const meter_pos_data = meter_data.map((d) => d.slice(1))//[[タイミング],[タイミング],…]
@@ -120,6 +132,79 @@
             const long_data = objects.filter((d) => d[0] == "LONG").flatMap((d) => split(d.slice(1), 3))//[[押すボタン,始点タイミング,終点タイミング],[押すボタン,始点タイミング,終点タイミング],…]
             const chip_data = objects.filter((d) => d[0] == "CHIP").flatMap((d) => split(d.slice(1), 2))//[[押すボタン,タイミング],[押すボタン,タイミング],…]
             const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))//[[レーザーの形,終点タイミング,終点レーン位置],[レーザーの形,終点タイミング,終点レーン位置],…]
+            if (random_data.length > 0 && random_data[0][0].length >= 8) {
+                ButtonNames = {
+                    A: random_data[0][0][0],
+                    B: random_data[0][0][1],
+                    C: random_data[0][0][2],
+                    D: random_data[0][0][3],
+                    L: random_data[0][0][4],
+                    R: random_data[0][0][5],
+                }
+                DeviceNames = {
+                    L: random_data[0][0][6],
+                    R: random_data[0][0][7],
+                }
+            } else {
+                ButtonNames = {
+                    A: "A",
+                    B: "B",
+                    C: "C",
+                    D: "D",
+                    L: "L",
+                    R: "R",
+                }
+                DeviceNames = {
+                    L: "L",
+                    R: "R",
+                }
+            }
+            if (speed_data.length > 0 && Number.isFinite(Number(speed_data[0][0]))) {
+                BarHeight = Const.BAR_HEIGHT * Number(speed_data[0][0])
+            } else {
+                BarHeight = Const.BAR_HEIGHT
+            }
+            if (color_data.length > 0 && color_data[0].length >= 2) {
+
+                VolColors = {
+                    L: color_data[0][0] ==
+                        "B" ? Const.VOL_L_COLOR :
+                        "R" ? Const.VOL_R_COLOR :
+                            "G" ? Const.VOL_G_COLOR :
+                                "Y" ? Const.VOL_Y_COLOR :
+                                    Const.VOL_L_COLOR,
+                    R: color_data[0][1] ==
+                        "B" ? Const.VOL_L_COLOR :
+                        "R" ? Const.VOL_R_COLOR :
+                            "G" ? Const.VOL_G_COLOR :
+                                "Y" ? Const.VOL_Y_COLOR :
+                                    Const.VOL_R_COLOR,
+                }
+                VolBorderColors = {
+                    
+                    L: color_data[0][0] ==
+                        "B" ? Const.VOL_L_BORDER_COLOR :
+                        "R" ? Const.VOL_R_BORDER_COLOR :
+                            "G" ? Const.VOL_G_BORDER_COLOR :
+                                "Y" ? Const.VOL_Y_BORDER_COLOR :
+                                    Const.VOL_L_BORDER_COLOR,
+                    R: color_data[0][1] ==
+                        "B" ? Const.VOL_L_BORDER_COLOR :
+                        "R" ? Const.VOL_R_BORDER_COLOR :
+                            "G" ? Const.VOL_G_BORDER_COLOR :
+                                "Y" ? Const.VOL_Y_BORDER_COLOR :
+                                    Const.VOL_R_BORDER_COLOR,
+                }
+            } else {
+                VolColors = {
+                    L: Const.VOL_L_COLOR,
+                    R: Const.VOL_R_COLOR,
+                }
+                VolBorderColors = {
+                    L: Const.VOL_L_BORDER_COLOR,
+                    R: Const.VOL_R_BORDER_COLOR,
+                }
+            }
             let last_pos
             if (range_data.length > 0) {
                 StartTiming = Fraction.stringToNumber(range_data[0][0])
@@ -167,11 +252,11 @@
 
     function setTransform(ctx, forVolL, forVolR) {
         if (forVolL) {//原点を左下に
-            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//左端を原点にする
+            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//左端を原点にする
         } else if (forVolR) {//原点を右下に
-            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//右端を原点にする
+            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//右端を原点にする
         } else {//原点を中央下に
-            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
+            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
         }
     }
     function drawBackground(ctx, data) {//背景を描く
@@ -207,7 +292,7 @@
         ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, TotalHeight)
         ctx.stroke()//BTレーン縁
         ctx.strokeStyle = Const.BAR_LINE_COLOR
-        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
+        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
         if (data.length > 0) {
             let currentBarHeight
             let currentPos = new Fraction()
@@ -715,7 +800,7 @@
 
         ctx.font = Const.BPM_FONT
         ctx.textAlign = "right"
-        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin)
+        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin)
         let previousBpm
         data.forEach(d => {//[BPM、タイミング]
             ctx.fillStyle = previousBpm ? previousBpm > Number(d[0]) ? Const.BPM_LOWER_COLOR : previousBpm < Number(d[0]) ? Const.BPM_UPPER_COLOR : Const.BPM_NORMAL_COLOR : Const.BPM_NORMAL_COLOR
