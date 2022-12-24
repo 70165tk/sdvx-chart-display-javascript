@@ -15,8 +15,8 @@
         static CHIP_BT_HEIGHT = 24//チップBTの高さ
         static CHIP_FX_HEIGHT = 24//チップFXの高さ
         static BAR_HEIGHT = 72 * 16// 4/4の1小節の長さ　16分の高さを決めて16倍
-        static MARGIN_HEIGHT_UPPER = Const.BAR_HEIGHT * 1 / 16//上に16分だけ余白
-        static MARGIN_HEIGHT_LOWER = Const.BAR_HEIGHT * 1 / 16//下に16分だけ余白
+        static MARGIN_HEIGHT_UPPER = BarHeight * 1 / 16//上に16分だけ余白
+        static MARGIN_HEIGHT_LOWER = BarHeight * 1 / 16//下に16分だけ余白
         static BPM_WIDTH = 80
 
         static LANE_BT_COLOR = "#000"
@@ -208,7 +208,7 @@
             let last_pos
             if (range_data.length > 0) {
                 StartTiming = Fraction.stringToNumber(range_data[0][0])
-                TotalHeight = Const.BAR_HEIGHT * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
+                TotalHeight = BarHeight * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
                 LowerMargin = Fraction.stringToNumber(range_data[0][0])
             }
             else {
@@ -222,7 +222,7 @@
                                     .map((s) => new Fraction(s))
                             ))
                         .toNumber()//canvasの高さ決定に使う、最後の譜面要素の位置
-                TotalHeight = Const.BAR_HEIGHT * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
+                TotalHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
                 LowerMargin = Const.MARGIN_HEIGHT_LOWER
             }
             const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
@@ -252,11 +252,11 @@
 
     function setTransform(ctx, forVolL, forVolR) {
         if (forVolL) {//原点を左下に
-            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//左端を原点にする
+            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//左端を原点にする
         } else if (forVolR) {//原点を右下に
-            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//右端を原点にする
+            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//右端を原点にする
         } else {//原点を中央下に
-            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
+            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
         }
     }
     function drawBackground(ctx, data) {//背景を描く
@@ -292,7 +292,7 @@
         ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, TotalHeight)
         ctx.stroke()//BTレーン縁
         ctx.strokeStyle = Const.BAR_LINE_COLOR
-        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
+        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
         if (data.length > 0) {
             let currentBarHeight
             let currentPos = new Fraction()
@@ -316,12 +316,12 @@
                 const targetPos = new Fraction(targetData[0])
                 //currentPos以前に配置された最後の拍子指定を読み取る
                 //拍子指定にしたがって次に足す長さを作る
-                currentBarHeight = targetPos.toNumber() * Const.BAR_HEIGHT
+                currentBarHeight = targetPos.toNumber() * BarHeight
                 currentPos = Fraction.Add(currentPos, targetPos)
             }
 
         } else {
-            for (let barLineHeight = 0; barLineHeight < TotalHeight; barLineHeight += Const.BAR_HEIGHT) {//小節線 拍子4/4
+            for (let barLineHeight = 0; barLineHeight < TotalHeight; barLineHeight += BarHeight) {//小節線 拍子4/4
                 ctx.beginPath()
                 ctx.moveTo(0, barLineHeight)
                 ctx.lineTo(Const.TOTAL_LANE_WIDTH, barLineHeight)
@@ -370,12 +370,12 @@
                     const markerStartX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const markerTopX = markerStartX + Const.LASER_WIDTH / 2
                     const markerEndX = markerStartX + Const.LASER_WIDTH
-                    const markerTopY = Const.BAR_HEIGHT * startPos
+                    const markerTopY = BarHeight * startPos
                     const markerStartY = markerTopY - 18
                     //始点の輪郭線の描画位置
                     const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const startLargerX = startSmallerX + Const.LASER_WIDTH
-                    const startY = Const.BAR_HEIGHT * startPos
+                    const startY = BarHeight * startPos
                     if (d[0] == DeviceNames["L"]) {
                         setTransform(ctx, true, false);//左端を原点にする
                         ctx.fillStyle = Const.VOL_L_COLOR
@@ -416,8 +416,8 @@
                         const startLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane + Const.LASER_WIDTH * Number(startLane < endLane)
                         const parallelX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH * Number(startLane > endLane)
                         const endX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH * Number(startLane < endLane)
-                        const startY = Const.BAR_HEIGHT * pos
-                        const endY = startY + Const.BAR_HEIGHT / 32
+                        const startY = BarHeight * pos
+                        const endY = startY + BarHeight / 32
                         const parallelY = startY + Const.LASER_VERTICAL_HEIGHT
 
                         const path = new Path2D()
@@ -446,10 +446,10 @@
 
                     const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const startLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane + Const.LASER_WIDTH
-                    const startY = Const.BAR_HEIGHT * startPos
+                    const startY = BarHeight * startPos
                     const endSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane
                     const endLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH
-                    const endY = Const.BAR_HEIGHT * endPos
+                    const endY = BarHeight * endPos
                     const path = new Path2D()
                     path.moveTo(startSmallerX, startY)
                     path.lineTo(endSmallerX, endY)
@@ -473,8 +473,8 @@
                         const verticalStartLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * verticalStartLane + Const.LASER_WIDTH * Number(verticalStartLane < verticalEndLane)
                         const verticalParallelX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * verticalEndLane + Const.LASER_WIDTH * Number(verticalStartLane > verticalEndLane)
                         const verticalEndX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * verticalEndLane + Const.LASER_WIDTH * Number(verticalStartLane < verticalEndLane)
-                        const verticalStartY = Const.BAR_HEIGHT * verticalPos
-                        const verticalEndY = verticalStartY + Const.BAR_HEIGHT / 32
+                        const verticalStartY = BarHeight * verticalPos
+                        const verticalEndY = verticalStartY + BarHeight / 32
                         const verticalParallelY = verticalStartY + Const.LASER_VERTICAL_HEIGHT
                         //曲線のパス用座標
                         const startPos = Fraction.stringToNumber(previous[1])
@@ -484,10 +484,10 @@
 
                         const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                         const startLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane + Const.LASER_WIDTH
-                        const startY = Const.BAR_HEIGHT * startPos
+                        const startY = BarHeight * startPos
                         const endSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane
                         const endLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH
-                        const endY = Const.BAR_HEIGHT * endPos
+                        const endY = BarHeight * endPos
 
                         let startCpSmallerX
                         let startCpLargerX
@@ -574,10 +574,10 @@
 
                         const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                         const startLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane + Const.LASER_WIDTH
-                        const startY = Const.BAR_HEIGHT * startPos
+                        const startY = BarHeight * startPos
                         const endSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane
                         const endLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH
-                        const endY = Const.BAR_HEIGHT * endPos
+                        const endY = BarHeight * endPos
 
                         let startCpSmallerX
                         let startCpLargerX
@@ -646,7 +646,7 @@
                 const startLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane + Const.LASER_WIDTH * Number(startLane < endLane)
                 const parallelX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH * Number(startLane > endLane)
                 const endX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH * Number(startLane < endLane)
-                const startY = Const.BAR_HEIGHT * pos
+                const startY = BarHeight * pos
                 const endY = startY + Const.LASER_END_HEIGHT
                 const parallelY = startY + Const.LASER_VERTICAL_HEIGHT
                 const path = new Path2D()
@@ -670,7 +670,7 @@
                 const endLane = Number(previous[2])
                 const endSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane
                 const endLargerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * endLane + Const.LASER_WIDTH
-                const endY = Const.BAR_HEIGHT * endPos
+                const endY = BarHeight * endPos
                 strokePath.moveTo(endSmallerX, endY)
                 strokePath.lineTo(endLargerX, endY)
             }
@@ -800,20 +800,20 @@
 
         ctx.font = Const.BPM_FONT
         ctx.textAlign = "right"
-        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT * StartTiming - LowerMargin)
+        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin)
         let previousBpm
         data.forEach(d => {//[BPM、タイミング]
             ctx.fillStyle = previousBpm ? previousBpm > Number(d[0]) ? Const.BPM_LOWER_COLOR : previousBpm < Number(d[0]) ? Const.BPM_UPPER_COLOR : Const.BPM_NORMAL_COLOR : Const.BPM_NORMAL_COLOR
             previousBpm = Number(d[0])
-            ctx.fillText(d[0], 0, -Const.BAR_HEIGHT * Fraction.stringToNumber(d[1]));
+            ctx.fillText(d[0], 0, -BarHeight * Fraction.stringToNumber(d[1]));
         })
     }
     //個々のノーツの描画用関数
     function placeLongFX(ctx, buttonName, startPos, endPos) {
         let fillRect1;
-        const fillRect2 = Const.BAR_HEIGHT * startPos;
+        const fillRect2 = BarHeight * startPos;
         let fillRect3;
-        const fillRect4 = Const.BAR_HEIGHT * (endPos - startPos);
+        const fillRect4 = BarHeight * (endPos - startPos);
         if (buttonName == "L") {
             fillRect1 = -0
             fillRect3 = -Const.LONG_FX_WIDTH
@@ -830,9 +830,9 @@
     }
     function placeLongBT(ctx, buttonName, startPos, endPos) {
         let fillRect1;
-        const fillRect2 = Const.BAR_HEIGHT * startPos;
+        const fillRect2 = BarHeight * startPos;
         let fillRect3;
-        const fillRect4 = Const.BAR_HEIGHT * (endPos - startPos);
+        const fillRect4 = BarHeight * (endPos - startPos);
         if (buttonName == "A") {
             fillRect1 = -Const.SINGLE_LANE_WIDTH - (Const.SINGLE_LANE_WIDTH - Const.LONG_BT_WIDTH) / 2
             fillRect3 = -Const.LONG_BT_WIDTH
@@ -856,7 +856,7 @@
     function placeChipFX(ctx, buttonName, pos, isSE) {
         setTransform(ctx, false, false);
         let fillRect1;
-        const fillRect2 = Const.BAR_HEIGHT * pos// - Const.CHIP_FX_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
+        const fillRect2 = BarHeight * pos// - Const.CHIP_FX_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
         let fillRect3;
         const fillRect4 = Const.CHIP_FX_HEIGHT;
         if (buttonName == "L") {
@@ -879,7 +879,7 @@
     function placeChipBT(ctx, buttonName, pos, onChipFX) {
         setTransform(ctx, false, false);
         let fillRect1;
-        const fillRect2 = Const.BAR_HEIGHT * pos// - Const.CHIP_BT_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
+        const fillRect2 = BarHeight * pos// - Const.CHIP_BT_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
         let fillRect3;
         const fillRect4 = Const.CHIP_BT_HEIGHT;
         ctx.fillStyle = Const.CHIP_BT_COLOR
