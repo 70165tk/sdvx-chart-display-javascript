@@ -207,7 +207,7 @@
         ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, TotalHeight)
         ctx.stroke()//BTレーン縁
         ctx.strokeStyle = Const.BAR_LINE_COLOR
-        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight - LowerMargin);//下側のマージンを省いてY=0を設定
+        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
         if (data.length > 0) {
             let currentBarHeight
             let currentPos = new Fraction()
@@ -715,7 +715,7 @@
 
         ctx.font = Const.BPM_FONT
         ctx.textAlign = "right"
-        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight - LowerMargin)
+        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + Const.BAR_HEIGHT*StartTiming - LowerMargin)
         let previousBpm
         data.forEach(d => {//[BPM、タイミング]
             ctx.fillStyle = previousBpm ? previousBpm > Number(d[0]) ? Const.BPM_LOWER_COLOR : previousBpm < Number(d[0]) ? Const.BPM_UPPER_COLOR : Const.BPM_NORMAL_COLOR : Const.BPM_NORMAL_COLOR
