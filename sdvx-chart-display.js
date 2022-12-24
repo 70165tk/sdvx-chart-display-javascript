@@ -431,6 +431,13 @@
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
+                        } else if (d[0].includes("STRAIGHT")) {//曲線の仕様で描く直線
+                            startCpSmallerX = startSmallerX
+                            startCpLargerX = startLargerX
+                            startCpY = startY
+                            endCpSmallerX = endSmallerX
+                            endCpLargerX = endLargerX
+                            endCpY = endY
                         } else {
                             console.error("カーブのタイプ指定が見つかりません")
                         }
@@ -514,6 +521,13 @@
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
+                        } else if (d[0].includes("STRAIGHT")) {//曲線の仕様で描く直線
+                            startCpSmallerX = startSmallerX
+                            startCpLargerX = startLargerX
+                            startCpY = startY
+                            endCpSmallerX = endSmallerX
+                            endCpLargerX = endLargerX
+                            endCpY = endY
                         } else {
                             console.error("カーブのタイプ指定が見つかりません")
                         }
