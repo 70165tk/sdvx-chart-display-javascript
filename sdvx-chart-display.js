@@ -378,12 +378,12 @@
                     const startY = BarHeight * startPos
                     if (d[0] == DeviceNames["L"]) {
                         setTransform(ctx, true, false);//左端を原点にする
-                        ctx.fillStyle = Const.VOL_L_COLOR
-                        ctx.strokeStyle = Const.VOL_L_BORDER_COLOR
+                        ctx.fillStyle = VolColors["L"]
+                        ctx.strokeStyle = VolBorderColors["L"]
                     } else if (d[0] == DeviceNames["R"]) {
                         setTransform(ctx, false, true);//右端を原点にする
-                        ctx.fillStyle = Const.VOL_R_COLOR
-                        ctx.strokeStyle = Const.VOL_R_BORDER_COLOR
+                        ctx.fillStyle = VolColors["R"]
+                        ctx.strokeStyle = VolBorderColors["R"]
                     }
                     ctx.beginPath()
                     ctx.moveTo(markerStartX, markerStartY)
