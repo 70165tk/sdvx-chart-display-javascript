@@ -15,8 +15,8 @@
         static CHIP_BT_HEIGHT = 24//チップBTの高さ
         static CHIP_FX_HEIGHT = 24//チップFXの高さ
         static BAR_HEIGHT = 72 * 16// 4/4の1小節の長さ　16分の高さを決めて16倍
-        static MARGIN_HEIGHT_UPPER = BarHeight * 1 / 16//上に16分だけ余白
-        static MARGIN_HEIGHT_LOWER = BarHeight * 1 / 16//下に16分だけ余白
+        static MARGIN_HEIGHT_UPPER = Const.BAR_HEIGHT * 1 / 16//上に16分だけ余白
+        static MARGIN_HEIGHT_LOWER = Const.BAR_HEIGHT * 1 / 16//下に16分だけ余白
         static BPM_WIDTH = 80
 
         static LANE_BT_COLOR = "#000"
