@@ -1,4 +1,4 @@
-(function () {
+{
     //定数項
     class Const {
         static TOTAL_LANE_WIDTH = 400//レーン部分の幅
@@ -1031,4 +1031,4 @@
     function round(number, digits) {
         return Math.round(number * Math.pow(10, digits)) / Math.pow(10, digits)
     }
-}())
+}
