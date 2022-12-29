@@ -125,6 +125,7 @@
             const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
             const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
             const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
+            const width_data = objects.filter((d) => d[0] == "WIDTH").flatMap((d) => split(d.slice(1), 1))//[[表示幅]]
             const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))//[[開始タイミング,終了タイミング]]
             const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))//[[拍子,タイミング],[拍子,タイミング],…]
             const meter_pos_data = meter_data.map((d) => d.slice(1))//[[タイミング],[タイミング],…]
@@ -165,7 +166,6 @@
                 BarHeight = Const.BAR_HEIGHT
             }
             if (color_data.length > 0 && color_data[0].length >= 2) {
-
                 VolColors = {
                     L: color_data[0][0] == "B" ? Const.VOL_L_COLOR :
                         color_data[0][0] == "R" ? Const.VOL_R_COLOR :
@@ -224,15 +224,20 @@
                 TotalHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
                 LowerMargin = Const.MARGIN_HEIGHT_LOWER
             }
-            const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
-            const bpm_exists = bpm_data.length > 0
-            TotalWidth =
-                Math.max(
+            let vols_lanes;
+            if (width_data.length > 0) {
+                TotalWidth = Number(width_data[0][0]) * Const.TOTAL_LANE_WIDTH
+            } else {
+                const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
+                const bpm_exists = bpm_data.length > 0
+                TotalWidth =
                     Math.max(
-                        Math.abs(vols_lanes.reduce((a, b) => Math.max(a, b), 1) - 0.5),
-                        Math.abs(vols_lanes.reduce((a, b) => Math.min(a, b), 0) - 0.5),
-                        0.5) * 2 * Const.TOTAL_LANE_WIDTH,
-                    Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
+                        Math.max(
+                            Math.abs(vols_lanes.reduce((a, b) => Math.max(a, b), 1) - 0.5),
+                            Math.abs(vols_lanes.reduce((a, b) => Math.min(a, b), 0) - 0.5),
+                            0.5) * 2 * Const.TOTAL_LANE_WIDTH,
+                        Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
+            }
             chartCanvas.setAttribute("width", `${TotalWidth}px`);
             chartCanvas.setAttribute("height", `${TotalHeight}px`);
             const ctx = chartCanvas.getContext('2d');
