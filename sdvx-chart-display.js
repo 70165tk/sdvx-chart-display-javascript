@@ -46,7 +46,10 @@
 
     }
     // (実質的な)グローバル変数
-    let TotalHeight;//画像全体の高さ　譜面の長さを参照して変動
+    let offScreenCanvas//オフスクリーンキャンバス　PREVIOUS指定時に持ち越される
+    let offScreenHeight;//オフスクリーンキャンバスの高さ
+    let TotalHeight;//画像全体の高さ　譜面の長さを参照して変動　現在のキャンバスの高さ
+    let offScreenWidth;//オフスクリーンキャンバスの幅
     let TotalWidth;//画像全体の幅　レーザーのはみ出し度合いを参照して変動
     let LowerMargin;//RANGEの指定の有無によって、RANGEの開始タイミングとConst.MARGIN_HEIGHT_LOWERのどちらかになる値
     let StartTiming;//図の原点に対応する譜面上のタイミング　RANGEの指定があればその値、なければ0から
@@ -104,7 +107,7 @@
     //配列をn個ずつに分割する関数
     const split = (array, n) => array.reduce((a, c, i) => i % n == 0 ? [...a, [c]] : [...a.slice(0, -1), [...a[a.length - 1], c]], [])
 
-
+    
     const charts = document.querySelectorAll(".chartImage")
     charts.forEach((c) => {
         showChart(c)
@@ -122,96 +125,88 @@
                     .map((st) => st.trim())
                     .filter((st) => st)
                 )//スペースとsplit後の空文字をここで削除しているため、スペースや余分な区切り文字を入れても機能する
-            const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
-            const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
-            const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
-            const width_data = objects.filter((d) => d[0] == "WIDTH").flatMap((d) => split(d.slice(1), 1))//[[表示幅]]
-            const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))//[[開始タイミング,終了タイミング]]
-            const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))//[[拍子,タイミング],[拍子,タイミング],…]
-            const meter_pos_data = meter_data.map((d) => d.slice(1))//[[タイミング],[タイミング],…]
-            const bpm_data = objects.filter((d) => d[0] == "BPM").flatMap((d) => split(d.slice(1), 2))//[[BPM,タイミング],[BPM,タイミング],…]
-            const long_data = objects.filter((d) => d[0] == "LONG").flatMap((d) => split(d.slice(1), 3))//[[押すボタン,始点タイミング,終点タイミング],[押すボタン,始点タイミング,終点タイミング],…]
-            const chip_data = objects.filter((d) => d[0] == "CHIP").flatMap((d) => split(d.slice(1), 2))//[[押すボタン,タイミング],[押すボタン,タイミング],…]
-            const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))//[[レーザーの形,終点タイミング,終点レーン位置],[レーザーの形,終点タイミング,終点レーン位置],…]
-            if (random_data.length > 0 && random_data[0][0].length >= 8) {
-                ButtonNames = {
-                    A: random_data[0][0][0],
-                    B: random_data[0][0][1],
-                    C: random_data[0][0][2],
-                    D: random_data[0][0][3],
-                    L: random_data[0][0][4],
-                    R: random_data[0][0][5],
+            if(!objects.flatMap(d=>d).includes("PREVIOUS")){
+                const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
+                const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
+                const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
+                const width_data = objects.filter((d) => d[0] == "WIDTH").flatMap((d) => split(d.slice(1), 1))//[[表示幅]]
+                const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))//[[拍子,タイミング],[拍子,タイミング],…]
+                const meter_pos_data = meter_data.map((d) => d.slice(1))//[[タイミング],[タイミング],…]
+                const bpm_data = objects.filter((d) => d[0] == "BPM").flatMap((d) => split(d.slice(1), 2))//[[BPM,タイミング],[BPM,タイミング],…]
+                const long_data = objects.filter((d) => d[0] == "LONG").flatMap((d) => split(d.slice(1), 3))//[[押すボタン,始点タイミング,終点タイミング],[押すボタン,始点タイミング,終点タイミング],…]
+                const chip_data = objects.filter((d) => d[0] == "CHIP").flatMap((d) => split(d.slice(1), 2))//[[押すボタン,タイミング],[押すボタン,タイミング],…]
+                const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))//[[レーザーの形,終点タイミング,終点レーン位置],[レーザーの形,終点タイミング,終点レーン位置],…]
+                if (random_data.length > 0 && random_data[0][0].length >= 8) {
+                    ButtonNames = {
+                        A: random_data[0][0][0],
+                        B: random_data[0][0][1],
+                        C: random_data[0][0][2],
+                        D: random_data[0][0][3],
+                        L: random_data[0][0][4],
+                        R: random_data[0][0][5],
+                    }
+                    DeviceNames = {
+                        L: random_data[0][0][6],
+                        R: random_data[0][0][7],
+                    }
+                } else {
+                    ButtonNames = {
+                        A: "A",
+                        B: "B",
+                        C: "C",
+                        D: "D",
+                        L: "L",
+                        R: "R",
+                    }
+                    DeviceNames = {
+                        L: "L",
+                        R: "R",
+                    }
                 }
-                DeviceNames = {
-                    L: random_data[0][0][6],
-                    R: random_data[0][0][7],
+                if (speed_data.length > 0 && Number.isFinite(Number(speed_data[0][0]))) {
+                    BarHeight = Const.BAR_HEIGHT * Number(speed_data[0][0])
+                } else {
+                    BarHeight = Const.BAR_HEIGHT
                 }
-            } else {
-                ButtonNames = {
-                    A: "A",
-                    B: "B",
-                    C: "C",
-                    D: "D",
-                    L: "L",
-                    R: "R",
+                if (color_data.length > 0 && color_data[0].length >= 2) {
+                    VolColors = {
+                        L: color_data[0][0] == "B" ? Const.VOL_L_COLOR :
+                            color_data[0][0] == "R" ? Const.VOL_R_COLOR :
+                                color_data[0][0] == "G" ? Const.VOL_G_COLOR :
+                                    color_data[0][0] == "Y" ? Const.VOL_Y_COLOR :
+                                        Const.VOL_L_COLOR,
+                        R: color_data[0][1] ==
+                            "B" ? Const.VOL_L_COLOR :
+                            color_data[0][1] == "R" ? Const.VOL_R_COLOR :
+                                color_data[0][1] == "G" ? Const.VOL_G_COLOR :
+                                    color_data[0][1] == "Y" ? Const.VOL_Y_COLOR :
+                                        Const.VOL_R_COLOR,
+                    }
+                    VolBorderColors = {
+                        L: color_data[0][0] ==
+                            "B" ? Const.VOL_L_BORDER_COLOR :
+                            color_data[0][0] == "R" ? Const.VOL_R_BORDER_COLOR :
+                                color_data[0][0] == "G" ? Const.VOL_G_BORDER_COLOR :
+                                    color_data[0][0] == "Y" ? Const.VOL_Y_BORDER_COLOR :
+                                        Const.VOL_L_BORDER_COLOR,
+                        R: color_data[0][1] ==
+                            "B" ? Const.VOL_L_BORDER_COLOR :
+                            color_data[0][1] == "R" ? Const.VOL_R_BORDER_COLOR :
+                                color_data[0][1] == "G" ? Const.VOL_G_BORDER_COLOR :
+                                    color_data[0][1] == "Y" ? Const.VOL_Y_BORDER_COLOR :
+                                        Const.VOL_R_BORDER_COLOR,
+                    }
+                } else {
+                    VolColors = {
+                        L: Const.VOL_L_COLOR,
+                        R: Const.VOL_R_COLOR,
+                    }
+                    VolBorderColors = {
+                        L: Const.VOL_L_BORDER_COLOR,
+                        R: Const.VOL_R_BORDER_COLOR,
+                    }
                 }
-                DeviceNames = {
-                    L: "L",
-                    R: "R",
-                }
-            }
-            if (speed_data.length > 0 && Number.isFinite(Number(speed_data[0][0]))) {
-                BarHeight = Const.BAR_HEIGHT * Number(speed_data[0][0])
-            } else {
-                BarHeight = Const.BAR_HEIGHT
-            }
-            if (color_data.length > 0 && color_data[0].length >= 2) {
-                VolColors = {
-                    L: color_data[0][0] == "B" ? Const.VOL_L_COLOR :
-                        color_data[0][0] == "R" ? Const.VOL_R_COLOR :
-                            color_data[0][0] == "G" ? Const.VOL_G_COLOR :
-                                color_data[0][0] == "Y" ? Const.VOL_Y_COLOR :
-                                    Const.VOL_L_COLOR,
-                    R: color_data[0][1] ==
-                        "B" ? Const.VOL_L_COLOR :
-                        color_data[0][1] == "R" ? Const.VOL_R_COLOR :
-                            color_data[0][1] == "G" ? Const.VOL_G_COLOR :
-                                color_data[0][1] == "Y" ? Const.VOL_Y_COLOR :
-                                    Const.VOL_R_COLOR,
-                }
-                VolBorderColors = {
-
-                    L: color_data[0][0] ==
-                        "B" ? Const.VOL_L_BORDER_COLOR :
-                        color_data[0][0] == "R" ? Const.VOL_R_BORDER_COLOR :
-                            color_data[0][0] == "G" ? Const.VOL_G_BORDER_COLOR :
-                                color_data[0][0] == "Y" ? Const.VOL_Y_BORDER_COLOR :
-                                    Const.VOL_L_BORDER_COLOR,
-                    R: color_data[0][1] ==
-                        "B" ? Const.VOL_L_BORDER_COLOR :
-                        color_data[0][1] == "R" ? Const.VOL_R_BORDER_COLOR :
-                            color_data[0][1] == "G" ? Const.VOL_G_BORDER_COLOR :
-                                color_data[0][1] == "Y" ? Const.VOL_Y_BORDER_COLOR :
-                                    Const.VOL_R_BORDER_COLOR,
-                }
-            } else {
-                VolColors = {
-                    L: Const.VOL_L_COLOR,
-                    R: Const.VOL_R_COLOR,
-                }
-                VolBorderColors = {
-                    L: Const.VOL_L_BORDER_COLOR,
-                    R: Const.VOL_R_BORDER_COLOR,
-                }
-            }
-            let last_pos
-            if (range_data.length > 0) {
-                StartTiming = Fraction.stringToNumber(range_data[0][0])
-                TotalHeight = BarHeight * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
-                LowerMargin = Fraction.stringToNumber(range_data[0][0])
-            }
-            else {
-                StartTiming = 0
+                let last_pos
                 const all_data = [...meter_pos_data, ...bpm_data, ...long_data, ...chip_data, ...vol_point_data]
                 last_pos =
                     Fraction.Max(...
@@ -221,34 +216,52 @@
                                     .map((s) => new Fraction(s))
                             ))
                         .toNumber()//canvasの高さ決定に使う、最後の譜面要素の位置
-                TotalHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
-                LowerMargin = Const.MARGIN_HEIGHT_LOWER
-            }
-            let vols_lanes;
-            if (width_data.length > 0) {
-                TotalWidth = Number(width_data[0][0]) * Const.TOTAL_LANE_WIDTH
-            } else {
-                const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
-                const bpm_exists = bpm_data.length > 0
-                TotalWidth =
-                    Math.max(
+                offScreenHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
+                
+                offScreenWidth = Const.TOTAL_LANE_WIDTH * 2
+                if (width_data.length > 0) {
+                    TotalWidth = Number(width_data[0][0]) * Const.TOTAL_LANE_WIDTH
+                } else {
+                    const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
+                    const bpm_exists = bpm_data.length > 0
+                    TotalWidth =
                         Math.max(
-                            Math.abs(vols_lanes.reduce((a, b) => Math.max(a, b), 1) - 0.5),
-                            Math.abs(vols_lanes.reduce((a, b) => Math.min(a, b), 0) - 0.5),
-                            0.5) * 2 * Const.TOTAL_LANE_WIDTH,
-                        Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
+                            Math.max(
+                                Math.abs(vols_lanes.reduce((a, b) => Math.max(a, b), 1) - 0.5),
+                                Math.abs(vols_lanes.reduce((a, b) => Math.min(a, b), 0) - 0.5),
+                                0.5) * 2 * Const.TOTAL_LANE_WIDTH,
+                            Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
+                }
+                offScreenCanvas = document.createElement("canvas")
+                offScreenCanvas.width = offScreenWidth
+                offScreenCanvas.height = offScreenHeight
+                const offScreenCtx = offScreenCanvas.getContext("2d")
+                // 背景を描く
+                drawBackground(offScreenCtx, meter_data)
+                //オブジェクトを描く
+                placeLongs(offScreenCtx, long_data)
+                const vol_data = objects.filter((d) => d[0] == "VOL").map((d) => split(d.slice(1), 3))
+                placeVols(offScreenCtx, vol_data)
+                placeChips(offScreenCtx, chip_data)
+                placeBpm(offScreenCtx, bpm_data)
+
+            }
+            const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))//[[開始タイミング,終了タイミング]]
+            if (range_data.length > 0) {
+                StartTiming = Fraction.stringToNumber(range_data[0][0])
+                TotalHeight = BarHeight * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
+                LowerMargin = 0
+            }
+            else {
+                StartTiming = 0
+                TotalHeight = offScreenHeight
+                LowerMargin = Const.MARGIN_HEIGHT_LOWER
             }
             chartCanvas.setAttribute("width", `${TotalWidth}px`);
             chartCanvas.setAttribute("height", `${TotalHeight}px`);
             const ctx = chartCanvas.getContext('2d');
-            // 背景を描く
-            drawBackground(ctx, meter_data)
-            //オブジェクトを描く
-            placeLongs(ctx, long_data)
-            const vol_data = objects.filter((d) => d[0] == "VOL").map((d) => split(d.slice(1), 3))
-            placeVols(ctx, vol_data)
-            placeChips(ctx, chip_data)
-            placeBpm(ctx, bpm_data)
+            ctx.drawImage(offScreenCanvas, (chartCanvas.width - offScreenCanvas.width) / 2, chartCanvas.height - offScreenCanvas.height + StartTiming * BarHeight + Const.MARGIN_HEIGHT_LOWER)
+            return offScreenCanvas
         } else {
             // キャンバスに未対応の場合の処理
         }
@@ -256,51 +269,51 @@
 
     function setTransform(ctx, forVolL, forVolR) {
         if (forVolL) {//原点を左下に
-            ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//左端を原点にする
+            ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//左端を原点にする
         } else if (forVolR) {//原点を右下に
-            ctx.setTransform(-1, 0, 0, -1, TotalWidth - (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//右端を原点にする
+            ctx.setTransform(-1, 0, 0, -1, ctx.canvas.width - (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//右端を原点にする
         } else {//原点を中央下に
-            ctx.setTransform(1, 0, 0, -1, TotalWidth / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
+            ctx.setTransform(1, 0, 0, -1, ctx.canvas.width / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
         }
     }
     function drawBackground(ctx, data) {//背景を描く
-        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight);
+        ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height);
         ctx.fillStyle = Const.LANE_BT_COLOR
-        ctx.fillRect(0, 0, Const.TOTAL_LANE_WIDTH, TotalHeight)//BTレーン
+        ctx.fillRect(0, 0, Const.TOTAL_LANE_WIDTH, ctx.canvas.height)//BTレーン
         ctx.fillStyle = Const.LANE_VOL_L_COLOR
-        ctx.fillRect(0, 0, Const.LASER_LANE_WIDTH, TotalHeight)//青レーザーレーン
+        ctx.fillRect(0, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)//青レーザーレーン
         ctx.fillStyle = Const.LANE_VOL_R_COLOR
-        ctx.fillRect(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0, Const.LASER_LANE_WIDTH, TotalHeight)//赤レーザーレーン
+        ctx.fillRect(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)//赤レーザーレーン
         ctx.lineWidth = Const.LINE_WIDTH
         ctx.strokeStyle = Const.LANE_VOL_L_BORDER_COLOR
         ctx.beginPath()
         ctx.moveTo(Const.LASER_LANE_WIDTH, 0)
-        ctx.lineTo(Const.LASER_LANE_WIDTH, TotalHeight)
+        ctx.lineTo(Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.moveTo(0, 0)
-        ctx.lineTo(0, TotalHeight)
+        ctx.lineTo(0, ctx.canvas.height)
         ctx.stroke()//青レーザーレーン縁
         ctx.strokeStyle = Const.LANE_VOL_R_BORDER_COLOR
         ctx.beginPath()
         ctx.moveTo(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0)
-        ctx.lineTo(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, TotalHeight)
+        ctx.lineTo(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.moveTo(Const.TOTAL_LANE_WIDTH, 0)
-        ctx.lineTo(Const.TOTAL_LANE_WIDTH, TotalHeight)
+        ctx.lineTo(Const.TOTAL_LANE_WIDTH, ctx.canvas.height)
         ctx.stroke()//赤レーザーレーン縁
         ctx.strokeStyle = Const.LANE_BT_BORDER_COLOR
         ctx.beginPath()
         ctx.moveTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 1, 0)
-        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 1, TotalHeight)
+        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 1, ctx.canvas.height)
         ctx.moveTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 2, 0)
-        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 2, TotalHeight)
+        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 2, ctx.canvas.height)
         ctx.moveTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, 0)
-        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, TotalHeight)
+        ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, ctx.canvas.height)
         ctx.stroke()//BTレーン縁
         ctx.strokeStyle = Const.BAR_LINE_COLOR
-        ctx.setTransform(1, 0, 0, -1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin);//下側のマージンを省いてY=0を設定
+        ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//下側のマージンを省いてY=0を設定
         if (data.length > 0) {
             let currentBarHeight
             let currentPos = new Fraction()
-            for (let barLineHeight = 0; barLineHeight < TotalHeight; barLineHeight += currentBarHeight) {//小節線 拍子変更を反映
+            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += currentBarHeight) {//小節線 拍子変更を反映
                 ctx.beginPath()
                 ctx.moveTo(0, barLineHeight)
                 ctx.lineTo(Const.TOTAL_LANE_WIDTH, barLineHeight)
@@ -325,7 +338,7 @@
             }
 
         } else {
-            for (let barLineHeight = 0; barLineHeight < TotalHeight; barLineHeight += BarHeight) {//小節線 拍子4/4
+            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += BarHeight) {//小節線 拍子4/4
                 ctx.beginPath()
                 ctx.moveTo(0, barLineHeight)
                 ctx.lineTo(Const.TOTAL_LANE_WIDTH, barLineHeight)
@@ -804,7 +817,7 @@
 
         ctx.font = Const.BPM_FONT
         ctx.textAlign = "right"
-        ctx.setTransform(1, 0, 0, 1, (TotalWidth - Const.TOTAL_LANE_WIDTH) / 2, TotalHeight + BarHeight * StartTiming - LowerMargin)
+        ctx.setTransform(1, 0, 0, 1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER)
         let previousBpm
         data.forEach(d => {//[BPM、タイミング]
             ctx.fillStyle = previousBpm ? previousBpm > Number(d[0]) ? Const.BPM_LOWER_COLOR : previousBpm < Number(d[0]) ? Const.BPM_UPPER_COLOR : Const.BPM_NORMAL_COLOR : Const.BPM_NORMAL_COLOR
