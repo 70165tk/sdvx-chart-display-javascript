@@ -107,7 +107,7 @@
     //配列をn個ずつに分割する関数
     const split = (array, n) => array.reduce((a, c, i) => i % n == 0 ? [...a, [c]] : [...a.slice(0, -1), [...a[a.length - 1], c]], [])
 
-    
+
     const charts = document.querySelectorAll(".chartImage")
     charts.forEach((c) => {
         showChart(c)
@@ -125,7 +125,7 @@
                     .map((st) => st.trim())
                     .filter((st) => st)
                 )//スペースとsplit後の空文字をここで削除しているため、スペースや余分な区切り文字を入れても機能する
-            if(!objects.flatMap(d=>d).includes("PREVIOUS")){
+            if (!objects.flatMap(d => d).includes("PREVIOUS")) {
                 const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
                 const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
                 const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
@@ -217,7 +217,7 @@
                             ))
                         .toNumber()//canvasの高さ決定に使う、最後の譜面要素の位置
                 offScreenHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
-                
+
                 offScreenWidth = Const.TOTAL_LANE_WIDTH * 2
                 if (width_data.length > 0) {
                     TotalWidth = Number(width_data[0][0]) * Const.TOTAL_LANE_WIDTH
@@ -261,7 +261,6 @@
             chartCanvas.setAttribute("height", `${TotalHeight}px`);
             const ctx = chartCanvas.getContext('2d');
             ctx.drawImage(offScreenCanvas, (chartCanvas.width - offScreenCanvas.width) / 2, chartCanvas.height - offScreenCanvas.height + StartTiming * BarHeight + Const.MARGIN_HEIGHT_LOWER)
-            return offScreenCanvas
         } else {
             // キャンバスに未対応の場合の処理
         }
