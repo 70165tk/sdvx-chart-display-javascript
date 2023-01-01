@@ -125,8 +125,8 @@
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
-                    for(j = i+1; j < nl.length, j++;){
-                        const afterCanvas = nl.item(j-1)//why -1?
+                    for(let j = i+1; j < nl.length; j++){
+                        const afterCanvas = nl.item(j)
                         if(afterCanvas.dataset.chart.includes("PREVIOUS")){
                             afterCanvas.getContext("2d").clearRect(0,0,afterCanvas.width,afterCanvas.height)
                             showChart(afterCanvas)
