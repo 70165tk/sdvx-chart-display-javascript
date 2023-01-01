@@ -110,21 +110,30 @@
     //スクリプト読み込みと同時に実行されるコード
     const chartChangers = Array.from(document.querySelectorAll(".chartChanger"))
     const charts = document.querySelectorAll("canvas.chartImage")
-    charts.forEach((c) => {
+    charts.forEach((c,i,nl) => {
         showChart(c)
         if("songName" in c.dataset){
             const chartChanger = chartChangers.find((cc)=>"songName" in cc.dataset && cc.dataset.songName == c.dataset.songName)
             if(chartChanger && "changeEvent" in chartChanger.dataset){
                 chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
                     if("chartParamsRemoving" in chartChanger.dataset){
-                        chartCanvas.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                        c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
                     }
                     if("chartParams" in chartChanger.dataset){
-                        chartCanvas.dataset.chart += chartChanger.dataset.chartParams
+                        c.dataset.chart += chartChanger.dataset.chartParams
                         chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
+                    for(j = i+1; j < nl.length, j++;){
+                        const afterCanvas = nl.item(j)
+                        if(afterCanvas.dataset.chart.includes("PREVIOUS")){
+                            afterCanvas.getContext("2d").clearRect(0,0,afterCanvas.width,afterCanvas.height)
+                            showChart(afterCanvas)
+                        }else{
+                            break
+                        }
+                    }
                 })
             }
         }
