@@ -107,17 +107,34 @@
     //配列をn個ずつに分割する関数
     const split = (array, n) => array.reduce((a, c, i) => i % n == 0 ? [...a, [c]] : [...a.slice(0, -1), [...a[a.length - 1], c]], [])
 
-
-    const charts = document.querySelectorAll(".chartImage")
+    //スクリプト読み込みと同時に実行されるコード
+    const chartChangers = Array.from(document.querySelectorAll(".chartChanger"))
+    const charts = document.querySelectorAll("canvas.chartImage")
     charts.forEach((c) => {
         showChart(c)
+        if("songName" in c.dataset){
+            const chartChanger = chartChangers.find((cc)=>"songName" in cc.dataset && cc.dataset.songName == c.dataset.songName)
+            if(chartChanger && "changeEvent" in chartChanger.dataset){
+                chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
+                    if("chartParams" in chartChanger.dataset){
+                        chartCanvas.dataset.chart += chartChanger.dataset.chartParams
+                    }if("chartParamsRemoving" in chartChanger.dataset){
+                        chartCanvas.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                    }
+                    c.getContext("2d").clearRect(0,0,c.width,c.height)
+                    showChart(c)
+                })
+            }
+        }
     })
+
+
     //canvasに譜面画像を描く
     function showChart(chartCanvas) {
         chartCanvas.width = 0
         chartCanvas.height = 0
         if (chartCanvas.getContext) {
-            const objects = chartCanvas.getAttribute("data-chart")
+            const objects = chartCanvas.dataset.chart
                 .split(";")
                 .map((s) => s.trim())
                 .filter((s) => s)
