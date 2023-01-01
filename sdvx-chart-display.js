@@ -116,10 +116,12 @@
             const chartChanger = chartChangers.find((cc)=>"songName" in cc.dataset && cc.dataset.songName == c.dataset.songName)
             if(chartChanger && "changeEvent" in chartChanger.dataset){
                 chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
+                    if("chartParamsRemoving" in chartChanger.dataset){
+                        chartCanvas.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                    }
                     if("chartParams" in chartChanger.dataset){
                         chartCanvas.dataset.chart += chartChanger.dataset.chartParams
-                    }if("chartParamsRemoving" in chartChanger.dataset){
-                        chartCanvas.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                        chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
