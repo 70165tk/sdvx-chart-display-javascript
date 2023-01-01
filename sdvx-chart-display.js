@@ -26,13 +26,13 @@
         static LANE_VOL_R_BORDER_COLOR = "rgb(255, 127, 255)"
         static LANE_BT_BORDER_COLOR = "#888"
         static BAR_LINE_COLOR = "#888"
-        static VOL_L_COLOR = "rgba(0, 127, 255, 0.5)"
+        static VOL_L_COLOR = "rgba(0, 127, 255, 0.6)"
         static VOL_L_BORDER_COLOR = "rgb(0, 255, 255)"
-        static VOL_R_COLOR = "rgba(255, 0, 127, 0.5)"
+        static VOL_R_COLOR = "rgba(255, 0, 127, 0.6)"
         static VOL_R_BORDER_COLOR = "rgb(255, 127, 255)"
-        static VOL_G_COLOR = "rgba(0, 255, 127, 0.5)"
+        static VOL_G_COLOR = "rgba(0, 255, 127, 0.6)"
         static VOL_G_BORDER_COLOR = "rgb(127, 255, 127)"
-        static VOL_Y_COLOR = "rgba(255, 255, 0, 0.5)"
+        static VOL_Y_COLOR = "rgba(255, 255, 0, 0.6)"
         static VOL_Y_BORDER_COLOR = "rgb(255, 255, 127)"
         static LONG_FX_COLOR = "rgba(255,102,0,0.8)"
         static LONG_BT_COLOR = "#fff"
@@ -371,6 +371,13 @@
         })
     }
     function placeVols(ctx, data) {//つまみの描画
+        const ctx_orig = ctx
+        const osc = document.createElement("canvas")
+        osc.width = ctx.canvas.width
+        osc.height = ctx.canvas.height
+        ctx = osc.getContext("2d")
+        ctx.globalCompositeOperation = "lighter"
+        ctx.lineWidth = Const.LINE_WIDTH
         data.forEach(point_data => {//point_data:1つながりのつまみの折れ目ごとの形状データ
             const strokePath = new Path2D()
             const fillPath = new Path2D()
@@ -694,9 +701,9 @@
             ctx.fill(fillPath)
             ctx.stroke(strokePath)
         })
-
-
-
+        ctx_orig.setTransform(1, 0, 0, 1, 0, 0)
+        ctx_orig.drawImage(osc, 0, 0)
+        ctx = ctx_orig
 
     }
     function placeChips(ctx, data) {//チップノーツの描画
