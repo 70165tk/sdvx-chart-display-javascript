@@ -117,7 +117,7 @@
             if(chartChanger && "changeEvent" in chartChanger.dataset){
                 chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
                     if("chartParamsRemoving" in chartChanger.dataset){
-                        c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                        c.dataset.chart = c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
                     }
                     if("chartParams" in chartChanger.dataset){
                         c.dataset.chart += chartChanger.dataset.chartParams
