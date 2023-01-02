@@ -62,8 +62,6 @@
                 animate([a,b,c,d],[0, 1, 2, 3],shuffle([0, 1, 2, 3])),
                 animate([l,r],[0, 1],shuffle([0, 1])),
             ])
-            // [a.style.order, b.style.order, c.style.order, d.style.order] = shuffle([0, 1, 2, 3]);
-            // [l.style.order, r.style.order] = shuffle([0, 1]);
             reflectOrderToChartChanger()
         })
     }
@@ -102,7 +100,6 @@
                 }else{
                     el.dataset.selected = "selected"
                     await animate([el, selectedEl],[el.style.order, selectedEl.style.order], [selectedEl.style.order, el.style.order]);
-                    // [el.style.order, selectedEl.style.order] = [selectedEl.style.order, el.style.order];
                     delete selectedEl.dataset.selected
                     delete el.dataset.selected
                     reflectOrderToChartChanger()
