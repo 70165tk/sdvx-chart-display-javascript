@@ -116,17 +116,17 @@
             const chartChanger = chartChangers.find((cc)=>"songName" in cc.dataset && cc.dataset.songName == c.dataset.songName)
             if(chartChanger && "changeEvent" in chartChanger.dataset){
                 chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
-                    if("chartParamsRemoving" in chartChanger.dataset){
+                    if("chartParamsRemoving" in c.dataset){
                         console.log(c.dataset.chart.slice(-60))
-                        console.log(chartChanger.dataset.chartParamsRemoving)
-                        console.log(c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "").slice(-60))
-                        c.dataset.chart = c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
+                        console.log(c.dataset.chartParamsRemoving)
+                        console.log(c.dataset.chart.replace(c.dataset.chartParamsRemoving, "").slice(-60))
+                        c.dataset.chart = c.dataset.chart.replace(c.dataset.chartParamsRemoving, "")
                     }
                     if("chartParams" in chartChanger.dataset){
                         c.dataset.chart += chartChanger.dataset.chartParams
-                        console.log("before chartparamsremoving\n"+chartChanger.dataset.chartParamsRemoving)
-                        chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
-                        console.log("after chartparamsremoving\n"+chartChanger.dataset.chartParamsRemoving)
+                        console.log("before chartparamsremoving\n"+c.dataset.chartParamsRemoving)
+                        c.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
+                        console.log("after chartparamsremoving\n"+c.dataset.chartParamsRemoving)
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
