@@ -124,7 +124,9 @@
                     }
                     if("chartParams" in chartChanger.dataset){
                         c.dataset.chart += chartChanger.dataset.chartParams
+                        console.log("before chartparamsremoving\n"+chartChanger.dataset.chartParamsRemoving)
                         chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
+                        console.log("after chartparamsremoving\n"+chartChanger.dataset.chartParamsRemoving)
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
