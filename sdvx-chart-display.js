@@ -115,16 +115,13 @@
         if("songName" in c.dataset){
             const chartChanger = chartChangers.find((cc)=>"songName" in cc.dataset && cc.dataset.songName == c.dataset.songName)
             if(chartChanger && "changeEvent" in chartChanger.dataset){
-                c.dataset.chart.replace(/\s+/g, '')
                 chartChanger.addEventListener(chartChanger.dataset.changeEvent,function(){
                     if("chartParamsRemoving" in chartChanger.dataset){
-                        c.dataset.chart.replace(/\s+/g, '')
-                        c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving.replace(/\s+/g, ''), "")
+                        c.dataset.chart.replace(chartChanger.dataset.chartParamsRemoving, "")
                     }
                     if("chartParams" in chartChanger.dataset){
-                        c.dataset.chart.replace(/\s+/g, '')
-                        c.dataset.chart += chartChanger.dataset.chartParams.replace(/\s+/g, '')
-                        chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams.replace(/\s+/g, '')
+                        c.dataset.chart += chartChanger.dataset.chartParams
+                        chartChanger.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
                     }
                     c.getContext("2d").clearRect(0,0,c.width,c.height)
                     showChart(c)
