@@ -260,6 +260,10 @@
                                 0.5) * 2 * Const.TOTAL_LANE_WIDTH,
                             Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
                 }
+                offScreenCanvas.width = 0
+                offScreenCanvas.height = 0
+                offScreenCanvas.remove();
+                delete offScreenCanvas;
                 offScreenCanvas = document.createElement("canvas")
                 offScreenCanvas.width = offScreenWidth
                 offScreenCanvas.height = offScreenHeight
@@ -732,7 +736,10 @@
         ctx_orig.setTransform(1, 0, 0, 1, 0, 0)
         ctx_orig.drawImage(osc, 0, 0)
         ctx = ctx_orig
-
+        osc.width = 0
+        osc.height = 0
+        osc.remove()
+        delete osc
     }
     function placeChips(ctx, data) {//チップノーツの描画
         const hashOfChipFX = {}//FXチップの上に乗ったBTチップを小さく表示するための連想配列
