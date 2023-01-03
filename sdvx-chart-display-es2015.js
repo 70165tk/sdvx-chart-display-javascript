@@ -159,10 +159,6 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
             return Math.min(a, b);
           }, 0) - 0.5), 0.5) * 2 * Const.TOTAL_LANE_WIDTH, Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists));
         }
-        offScreenCanvas.width = 0;
-        offScreenCanvas.height = 0;
-        offScreenCanvas.remove();
-        //delete offScreenCanvas;
         offScreenCanvas = document.createElement("canvas");
         offScreenCanvas.width = offScreenWidth;
         offScreenCanvas.height = offScreenHeight;
@@ -605,10 +601,6 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     ctx_orig.setTransform(1, 0, 0, 1, 0, 0);
     ctx_orig.drawImage(osc, 0, 0);
     ctx = ctx_orig;
-    osc.width = 0;
-    osc.height = 0;
-    osc.remove();
-    //delete osc
   };
   var placeChips = function placeChips(ctx, data) {
     var hashOfChipFX = {};
