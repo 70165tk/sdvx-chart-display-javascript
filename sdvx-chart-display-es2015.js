@@ -1,3 +1,5 @@
+"use strict";
+
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -160,7 +162,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
         offScreenCanvas.width = 0;
         offScreenCanvas.height = 0;
         offScreenCanvas.remove();
-        delete offScreenCanvas;
+        //delete offScreenCanvas;
         offScreenCanvas = document.createElement("canvas");
         offScreenCanvas.width = offScreenWidth;
         offScreenCanvas.height = offScreenHeight;
@@ -606,7 +608,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     osc.width = 0;
     osc.height = 0;
     osc.remove();
-    delete osc
+    //delete osc
   };
   var placeChips = function placeChips(ctx, data) {
     var hashOfChipFX = {};
