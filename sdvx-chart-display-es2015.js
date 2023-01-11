@@ -159,13 +159,14 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
             return Math.min(a, b);
           }, 0) - 0.5), 0.5) * 2 * Const.TOTAL_LANE_WIDTH, Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists));
         }
-        offScreenCanvas.width = 0;
-        offScreenCanvas.height = 0;
-        offScreenCanvas.remove();
-        //delete offScreenCanvas;
         offScreenCanvas = document.createElement("canvas");
         offScreenCanvas.width = offScreenWidth;
         offScreenCanvas.height = offScreenHeight;
+        if (chartCanvas.dataset.songName in offScreenCanvasCache) {
+          offScreenCanvasCache[chartCanvas.dataset.songName].push(offScreenCanvas);
+        } else {
+          offScreenCanvasCache[chartCanvas.dataset.songName] = [offScreenCanvas];
+        }
         var offScreenCtx = offScreenCanvas.getContext("2d");
         drawBackground(offScreenCtx, meter_data);
         placeLongs(offScreenCtx, long_data);
@@ -197,6 +198,13 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       var ctx = chartCanvas.getContext('2d');
       ctx.drawImage(offScreenCanvas, (chartCanvas.width - offScreenCanvas.width) / 2, chartCanvas.height - offScreenCanvas.height + StartTiming * BarHeight + Const.MARGIN_HEIGHT_LOWER);
     } else {}
+  };
+  var clearCache = function clearCache(songName) {
+    offScreenCanvasCache[songName].forEach(function (c) {
+      c.height = 0;
+      c.width = 0;
+    });
+    delete offScreenCanvasCache[songName];
   };
   var setTransform = function setTransform(ctx, forVolL, forVolR) {
     if (forVolL) {
@@ -1003,6 +1011,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
   var VolBorderColors;
   var ButtonNames;
   var DeviceNames;
+  var offScreenCanvasCache = {};
   var Fraction = /*#__PURE__*/function () {
     function Fraction() {
       _classCallCheck(this, Fraction);
@@ -1115,6 +1124,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
             c.dataset.chartParamsRemoving = chartChanger.dataset.chartParams;
           }
           c.getContext("2d").clearRect(0, 0, c.width, c.height);
+          clearCache(c.dataset.songName);
           showChart(c);
           for (var j = i + 1; j < nl.length; j++) {
             var afterCanvas = nl.item(j);
