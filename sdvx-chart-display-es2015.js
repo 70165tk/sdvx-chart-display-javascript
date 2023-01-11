@@ -203,6 +203,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     offScreenCanvasCache[songName].forEach(function (c) {
       c.height = 0;
       c.width = 0;
+      c.remove();
     });
     delete offScreenCanvasCache[songName];
   };
@@ -356,7 +357,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
             console.error("直角同士が隣接しています");
           }
           previousVerticalStartLane = Number(previous[2]);
-        } else if (d[0] == "STRAIGHT") {
+        } else if (d[0].slice(0, 8) == "STRAIGHT") {
           var startPosDelay = 0;
           if (previous[0] == "VERTICAL") {
             var pos = Fraction.stringToNumber(previous[1]);
@@ -1122,6 +1123,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           if ("chartParams" in chartChanger.dataset) {
             c.dataset.chart += chartChanger.dataset.chartParams;
             c.dataset.chartParamsRemoving = chartChanger.dataset.chartParams;
+          }
+          if ("chartReplacePattern" in chartChanger.dataset && "chartReplacement" in chartChanger.dataset) {
+            c.dataset.chart = c.dataset.chart.replace(new RegExp(chartChanger.dataset.chartReplacePattern, "g"), chartChanger.dataset.chartReplacement);
           }
           c.getContext("2d").clearRect(0, 0, c.width, c.height);
           clearCache(c.dataset.songName);

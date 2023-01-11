@@ -1,22 +1,21 @@
 {
-    //定数項
     class Const {
-        static TOTAL_LANE_WIDTH = 400//レーン部分の幅
-        static LASER_LANE_WIDTH = Const.TOTAL_LANE_WIDTH / 8//レーザーレーン幅
-        static LASER_WIDTH = Const.LASER_LANE_WIDTH//レーザー幅
-        static LASER_VERTICAL_HEIGHT = 36//レーザー直角高さ
-        static LASER_END_HEIGHT = 64//レーザー直角終端の高さ
-        static LINE_WIDTH = 4//線の幅
-        static SINGLE_LANE_WIDTH = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH * 2) / 4//BTレーン1つの幅
-        static CHIP_BT_WIDTH = Const.SINGLE_LANE_WIDTH - 4//レーン幅から両側2縮小
-        static LONG_BT_WIDTH = Const.SINGLE_LANE_WIDTH - 16//レーン幅から両側8縮小
-        static CHIP_FX_WIDTH = Const.SINGLE_LANE_WIDTH * 2 - 4//レーン幅から両側2縮小
-        static LONG_FX_WIDTH = Const.SINGLE_LANE_WIDTH * 2 - 2//レーン幅から片側2縮小
-        static CHIP_BT_HEIGHT = 24//チップBTの高さ
-        static CHIP_FX_HEIGHT = 24//チップFXの高さ
-        static BAR_HEIGHT = 72 * 16// 4/4の1小節の長さ　16分の高さを決めて16倍
-        static MARGIN_HEIGHT_UPPER = Const.BAR_HEIGHT * 1 / 16//上に16分だけ余白
-        static MARGIN_HEIGHT_LOWER = Const.BAR_HEIGHT * 1 / 16//下に16分だけ余白
+        static TOTAL_LANE_WIDTH = 400
+        static LASER_LANE_WIDTH = Const.TOTAL_LANE_WIDTH / 8
+        static LASER_WIDTH = Const.LASER_LANE_WIDTH
+        static LASER_VERTICAL_HEIGHT = 36
+        static LASER_END_HEIGHT = 64
+        static LINE_WIDTH = 4
+        static SINGLE_LANE_WIDTH = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH * 2) / 4
+        static CHIP_BT_WIDTH = Const.SINGLE_LANE_WIDTH - 4
+        static LONG_BT_WIDTH = Const.SINGLE_LANE_WIDTH - 16
+        static CHIP_FX_WIDTH = Const.SINGLE_LANE_WIDTH * 2 - 4
+        static LONG_FX_WIDTH = Const.SINGLE_LANE_WIDTH * 2 - 2
+        static CHIP_BT_HEIGHT = 24
+        static CHIP_FX_HEIGHT = 24
+        static BAR_HEIGHT = 72 * 16
+        static MARGIN_HEIGHT_UPPER = Const.BAR_HEIGHT * 1 / 16
+        static MARGIN_HEIGHT_LOWER = Const.BAR_HEIGHT * 1 / 16
         static BPM_WIDTH = 80
 
         static LANE_BT_COLOR = "#000"
@@ -45,46 +44,48 @@
         static BPM_FONT = "48px system-ui"
 
     }
-    // (実質的な)グローバル変数
-    let offScreenCanvas//オフスクリーンキャンバス　PREVIOUS指定時に持ち越される
-    let offScreenHeight;//オフスクリーンキャンバスの高さ
-    let TotalHeight;//画像全体の高さ　譜面の長さを参照して変動　現在のキャンバスの高さ
-    let offScreenWidth;//オフスクリーンキャンバスの幅
-    let TotalWidth;//画像全体の幅　レーザーのはみ出し度合いを参照して変動
-    let LowerMargin;//RANGEの指定の有無によって、RANGEの開始タイミングとConst.MARGIN_HEIGHT_LOWERのどちらかになる値
-    let StartTiming;//図の原点に対応する譜面上のタイミング　RANGEの指定があればその値、なければ0から
-    let BarHeight;//1小節の高さ
-    let VolColors;//レーザーの色を指定する連想配列
-    let VolBorderColors;//レーザーの縁の色を指定する連想配列
-    let ButtonNames;//ButtonNames["A"]はBT-Aのレーンに描画すべきデータに付けられている名前(正規なら"A"、ミラーなら"D")
-    let DeviceNames;//ButtonNamesのつまみ版
-    //分数クラス
+
+    let offScreenCanvas
+    let offScreenHeight;
+    let TotalHeight;
+    let offScreenWidth;
+    let TotalWidth;
+    let LowerMargin;
+    let StartTiming;
+    let BarHeight;
+    let VolColors;
+    let VolBorderColors;
+    let ButtonNames;
+    let DeviceNames;
+
+    let offScreenCanvasCache = {}
+
     class Fraction {
         constructor(...args) {
-            this.numerator//分子
-            this.denominator//分母
-            if (args.length == 1 && typeof args[0] === "string" && /[+-]?\d+\/[+-]?\d+/.test(args[0])) {//分数の形式に沿った文字列
+            this.numerator
+            this.denominator
+            if (args.length == 1 && typeof args[0] === "string" && /[+-]?\d+\/[+-]?\d+/.test(args[0])) {
                 [this.numerator, this.denominator] = args[0].split("/").map((n) => Number(n))
-            } else if (args.length == 2 && typeof args[0] === "number" && typeof args[1] === "number") {//分子,分母
+            } else if (args.length == 2 && typeof args[0] === "number" && typeof args[1] === "number") {
                 this.numerator = args[0]
                 this.denominator = args[1]
-            } else if (args.length == 0) {//引数なしでインスタンス化すると0/1に
+            } else if (args.length == 0) {
                 this.numerator = 0
                 this.denominator = 1
             } else {
                 console.error(`${args}は分数に変換できません`)
             }
         }
-        toNumber() {//数値へ変換
+        toNumber() {
             return this.numerator / this.denominator
         }
-        toString() {//文字列へ変換
+        toString() {
             return `${this.numerator}/${this.denominator}`
         }
-        static stringToNumber(string) {//文字列を数値へ変換
+        static stringToNumber(string) {
             return new Fraction(string).toNumber()
         }
-        static Equal(fraction1, fraction2) {//2つの分数が同じ値を指しているか判定
+        static Equal(fraction1, fraction2) {
             return Math.round(fraction1.numerator * fraction2.denominator) == Math.round(fraction2.numerator * fraction1.denominator)
         }
         static Add(...fracs) {
@@ -94,20 +95,20 @@
             })
             return res
         }
-        static isFraction(target) {//分数として解釈できる文字列か判定
+        static isFraction(target) {
             return typeof target === "string" && /[+-]?\d+\/[+-]?\d+/.test(target)
         }
-        static Max(...fracs) {//最大のものを返す
+        static Max(...fracs) {
             return fracs.reduce((fa, fb) => fa.numerator * fb.denominator > fb.numerator * fa.denominator ? fa : fb)
         }
-        static Min(...fracs) {//最小のものを返す
+        static Min(...fracs) {
             return fracs.reduce((fa, fb) => fa.numerator * fb.denominator < fb.numerator * fa.denominator ? fa : fb)
         }
     }
-    //配列をn個ずつに分割する関数
+
     const split = (array, n) => array.reduce((a, c, i) => i % n == 0 ? [...a, [c]] : [...a.slice(0, -1), [...a[a.length - 1], c]], [])
 
-    //スクリプト読み込みと同時に実行されるコード
+
     const chartChangers = Array.from(document.querySelectorAll(".chartChanger"))
     const charts = document.querySelectorAll("canvas.chartImage")
     charts.forEach((c, i, nl) => {
@@ -123,7 +124,11 @@
                         c.dataset.chart += chartChanger.dataset.chartParams
                         c.dataset.chartParamsRemoving = chartChanger.dataset.chartParams
                     }
+                    if("chartReplacePattern" in chartChanger.dataset&&"chartReplacement"in chartChanger.dataset){
+                        c.dataset.chart = c.dataset.chart.replace(new RegExp(chartChanger.dataset.chartReplacePattern,"g"), chartChanger.dataset.chartReplacement)
+                    }
                     c.getContext("2d").clearRect(0, 0, c.width, c.height)
+                    clearCache(c.dataset.songName)
                     showChart(c)
                     for (let j = i + 1; j < nl.length; j++) {
                         const afterCanvas = nl.item(j)
@@ -140,7 +145,7 @@
     })
 
 
-    //canvasに譜面画像を描く
+
     function showChart(chartCanvas) {
         chartCanvas.width = 0
         chartCanvas.height = 0
@@ -152,18 +157,18 @@
                 .map((o) => o.split(",")
                     .map((st) => st.trim())
                     .filter((st) => st)
-                )//スペースとsplit後の空文字をここで削除しているため、スペースや余分な区切り文字を入れても機能する
+                )
             if (!objects.flatMap(d => d).includes("PREVIOUS")) {
-                const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))//[[ランダム配置]]
-                const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))//[[倍率]]
-                const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))//[[VOL-Lの色、VOL-Rの色]]
-                const width_data = objects.filter((d) => d[0] == "WIDTH").flatMap((d) => split(d.slice(1), 1))//[[表示幅]]
-                const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))//[[拍子,タイミング],[拍子,タイミング],…]
-                const meter_pos_data = meter_data.map((d) => d.slice(1))//[[タイミング],[タイミング],…]
-                const bpm_data = objects.filter((d) => d[0] == "BPM").flatMap((d) => split(d.slice(1), 2))//[[BPM,タイミング],[BPM,タイミング],…]
-                const long_data = objects.filter((d) => d[0] == "LONG").flatMap((d) => split(d.slice(1), 3))//[[押すボタン,始点タイミング,終点タイミング],[押すボタン,始点タイミング,終点タイミング],…]
-                const chip_data = objects.filter((d) => d[0] == "CHIP").flatMap((d) => split(d.slice(1), 2))//[[押すボタン,タイミング],[押すボタン,タイミング],…]
-                const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))//[[レーザーの形,終点タイミング,終点レーン位置],[レーザーの形,終点タイミング,終点レーン位置],…]
+                const random_data = objects.filter((d) => d[0] == "RANDOM").flatMap((d) => split(d.slice(1), 1))
+                const speed_data = objects.filter((d) => d[0] == "SPEED").flatMap((d) => split(d.slice(1), 1))
+                const color_data = objects.filter((d) => d[0] == "COLOR").flatMap((d) => split(d.slice(1), 2))
+                const width_data = objects.filter((d) => d[0] == "WIDTH").flatMap((d) => split(d.slice(1), 1))
+                const meter_data = objects.filter((d) => d[0] == "METER").flatMap((d) => split(d.slice(1), 2))
+                const meter_pos_data = meter_data.map((d) => d.slice(1))
+                const bpm_data = objects.filter((d) => d[0] == "BPM").flatMap((d) => split(d.slice(1), 2))
+                const long_data = objects.filter((d) => d[0] == "LONG").flatMap((d) => split(d.slice(1), 3))
+                const chip_data = objects.filter((d) => d[0] == "CHIP").flatMap((d) => split(d.slice(1), 2))
+                const vol_point_data = objects.filter((d) => d[0] == "VOL").flatMap((d) => split(d.slice(1), 3))
                 if (random_data.length > 0 && random_data[0][0].length >= 8) {
                     ButtonNames = {
                         A: random_data[0][0][0],
@@ -243,14 +248,14 @@
                                 ds.filter((s) => Fraction.isFraction(s))
                                     .map((s) => new Fraction(s))
                             ))
-                        .toNumber()//canvasの高さ決定に使う、最後の譜面要素の位置
-                offScreenHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER//canvasの高さ
+                        .toNumber()
+                offScreenHeight = BarHeight * last_pos + Const.MARGIN_HEIGHT_UPPER + Const.MARGIN_HEIGHT_LOWER
 
                 offScreenWidth = Const.TOTAL_LANE_WIDTH * 2
                 if (width_data.length > 0) {
                     TotalWidth = Number(width_data[0][0]) * Const.TOTAL_LANE_WIDTH
                 } else {
-                    const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))//canvasの幅決定に使う、レーザーの配置されたレーン位置
+                    const vols_lanes = vol_point_data.map((ds) => Number(ds[2]))
                     const bpm_exists = bpm_data.length > 0
                     TotalWidth =
                         Math.max(
@@ -258,19 +263,20 @@
                                 Math.abs(vols_lanes.reduce((a, b) => Math.max(a, b), 1) - 0.5),
                                 Math.abs(vols_lanes.reduce((a, b) => Math.min(a, b), 0) - 0.5),
                                 0.5) * 2 * Const.TOTAL_LANE_WIDTH,
-                            Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))//-0.5～1.5を-1～1に補正し、絶対値の最大値の2倍（両側）だけ表示幅を広げる
+                            Const.TOTAL_LANE_WIDTH + Const.BPM_WIDTH * 2 * Number(bpm_exists))
                 }
-                offScreenCanvas.width = 0
-                offScreenCanvas.height = 0
-                offScreenCanvas.remove();
-                delete offScreenCanvas;
                 offScreenCanvas = document.createElement("canvas")
                 offScreenCanvas.width = offScreenWidth
                 offScreenCanvas.height = offScreenHeight
+                if (chartCanvas.dataset.songName in offScreenCanvasCache) {
+                    offScreenCanvasCache[chartCanvas.dataset.songName].push(offScreenCanvas)
+                } else {
+                    offScreenCanvasCache[chartCanvas.dataset.songName] = [offScreenCanvas]
+                }
                 const offScreenCtx = offScreenCanvas.getContext("2d")
-                // 背景を描く
+
                 drawBackground(offScreenCtx, meter_data)
-                //オブジェクトを描く
+
                 placeLongs(offScreenCtx, long_data)
                 const vol_data = objects.filter((d) => d[0] == "VOL").map((d) => split(d.slice(1), 3))
                 placeVols(offScreenCtx, vol_data)
@@ -278,10 +284,10 @@
                 placeBpm(offScreenCtx, bpm_data)
 
             }
-            const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))//[[開始タイミング,終了タイミング]]
+            const range_data = objects.filter((d) => d[0] == "RANGE").flatMap((d) => split(d.slice(1), 2))
             if (range_data.length > 0) {
                 StartTiming = Fraction.stringToNumber(range_data[0][0])
-                TotalHeight = BarHeight * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))//RANGEについては初めの2つのデータのみを読み取る
+                TotalHeight = BarHeight * (Fraction.stringToNumber(range_data[0][1]) - Fraction.stringToNumber(range_data[0][0]))
                 LowerMargin = 0
             }
             else {
@@ -294,27 +300,35 @@
             const ctx = chartCanvas.getContext('2d');
             ctx.drawImage(offScreenCanvas, (chartCanvas.width - offScreenCanvas.width) / 2, chartCanvas.height - offScreenCanvas.height + StartTiming * BarHeight + Const.MARGIN_HEIGHT_LOWER)
         } else {
-            // キャンバスに未対応の場合の処理
+
         }
+    }
+    function clearCache(songName) {
+        offScreenCanvasCache[songName].forEach((c) => {
+            c.height = 0
+            c.width = 0
+            c.remove()
+        })
+        delete offScreenCanvasCache[songName]
     }
 
     function setTransform(ctx, forVolL, forVolR) {
-        if (forVolL) {//原点を左下に
-            ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//左端を原点にする
-        } else if (forVolR) {//原点を右下に
-            ctx.setTransform(-1, 0, 0, -1, ctx.canvas.width - (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//右端を原点にする
-        } else {//原点を中央下に
-            ctx.setTransform(1, 0, 0, -1, ctx.canvas.width / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//Y軸反転、図中のX軸中央、Y軸下端から16分1個空けたところに原点移動
+        if (forVolL) {
+            ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);
+        } else if (forVolR) {
+            ctx.setTransform(-1, 0, 0, -1, ctx.canvas.width - (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);
+        } else {
+            ctx.setTransform(1, 0, 0, -1, ctx.canvas.width / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);
         }
     }
-    function drawBackground(ctx, data) {//背景を描く
+    function drawBackground(ctx, data) {
         ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height);
         ctx.fillStyle = Const.LANE_BT_COLOR
-        ctx.fillRect(0, 0, Const.TOTAL_LANE_WIDTH, ctx.canvas.height)//BTレーン
+        ctx.fillRect(0, 0, Const.TOTAL_LANE_WIDTH, ctx.canvas.height)
         ctx.fillStyle = Const.LANE_VOL_L_COLOR
-        ctx.fillRect(0, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)//青レーザーレーン
+        ctx.fillRect(0, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.fillStyle = Const.LANE_VOL_R_COLOR
-        ctx.fillRect(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)//赤レーザーレーン
+        ctx.fillRect(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0, Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.lineWidth = Const.LINE_WIDTH
         ctx.strokeStyle = Const.LANE_VOL_L_BORDER_COLOR
         ctx.beginPath()
@@ -322,14 +336,14 @@
         ctx.lineTo(Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.moveTo(0, 0)
         ctx.lineTo(0, ctx.canvas.height)
-        ctx.stroke()//青レーザーレーン縁
+        ctx.stroke()
         ctx.strokeStyle = Const.LANE_VOL_R_BORDER_COLOR
         ctx.beginPath()
         ctx.moveTo(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, 0)
         ctx.lineTo(Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH, ctx.canvas.height)
         ctx.moveTo(Const.TOTAL_LANE_WIDTH, 0)
         ctx.lineTo(Const.TOTAL_LANE_WIDTH, ctx.canvas.height)
-        ctx.stroke()//赤レーザーレーン縁
+        ctx.stroke()
         ctx.strokeStyle = Const.LANE_BT_BORDER_COLOR
         ctx.beginPath()
         ctx.moveTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 1, 0)
@@ -338,13 +352,13 @@
         ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 2, ctx.canvas.height)
         ctx.moveTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, 0)
         ctx.lineTo(Const.LASER_LANE_WIDTH + Const.SINGLE_LANE_WIDTH * 3, ctx.canvas.height)
-        ctx.stroke()//BTレーン縁
+        ctx.stroke()
         ctx.strokeStyle = Const.BAR_LINE_COLOR
-        ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);//下側のマージンを省いてY=0を設定
+        ctx.setTransform(1, 0, 0, -1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER);
         if (data.length > 0) {
             let currentBarHeight
             let currentPos = new Fraction()
-            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += currentBarHeight) {//小節線 拍子変更を反映
+            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += currentBarHeight) {
                 ctx.beginPath()
                 ctx.moveTo(0, barLineHeight)
                 ctx.lineTo(Const.TOTAL_LANE_WIDTH, barLineHeight)
@@ -362,14 +376,14 @@
                 }
                 const targetData = data[targetIndex]
                 const targetPos = new Fraction(targetData[0])
-                //currentPos以前に配置された最後の拍子指定を読み取る
-                //拍子指定にしたがって次に足す長さを作る
+
+
                 currentBarHeight = targetPos.toNumber() * BarHeight
                 currentPos = Fraction.Add(currentPos, targetPos)
             }
 
         } else {
-            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += BarHeight) {//小節線 拍子4/4
+            for (let barLineHeight = 0; barLineHeight < ctx.canvas.height; barLineHeight += BarHeight) {
                 ctx.beginPath()
                 ctx.moveTo(0, barLineHeight)
                 ctx.lineTo(Const.TOTAL_LANE_WIDTH, barLineHeight)
@@ -378,8 +392,8 @@
 
         }
     }
-    function placeLongs(ctx, data) {//ロングノーツ描画
-        data.forEach(d => {//FXを描くループ
+    function placeLongs(ctx, data) {
+        data.forEach(d => {
             if (d[0].includes(ButtonNames["L"])) {
                 placeLongFX(ctx, "L", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
@@ -387,7 +401,7 @@
                 placeLongFX(ctx, "R", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
         })
-        data.forEach(d => {//BTを描くループ
+        data.forEach(d => {
             if (d[0].includes(ButtonNames["A"])) {
                 placeLongBT(ctx, "A", Fraction.stringToNumber(d[1]), Fraction.stringToNumber(d[2]))
             }
@@ -402,7 +416,7 @@
             }
         })
     }
-    function placeVols(ctx, data) {//つまみの描画
+    function placeVols(ctx, data) {
         const ctx_orig = ctx
         const osc = document.createElement("canvas")
         osc.width = ctx.canvas.width
@@ -410,33 +424,33 @@
         ctx = osc.getContext("2d")
         ctx.globalCompositeOperation = "lighter"
         ctx.lineWidth = Const.LINE_WIDTH
-        data.forEach(point_data => {//point_data:1つながりのつまみの折れ目ごとの形状データ
+        data.forEach(point_data => {
             const strokePath = new Path2D()
             const fillPath = new Path2D()
             if (point_data[0][0] != DeviceNames["L"] && point_data[0][0] != DeviceNames["R"]) { console.error("レーザー開始点の情報がありません") }
             let previous
             let previousVerticalStartLane
             point_data.forEach((d => {
-                //始点
+
                 if (d[0] == DeviceNames["L"] || d[0] == DeviceNames["R"]) {
                     const startPos = Fraction.stringToNumber(d[1])
                     const startLane = Number(d[2])
-                    //始点の下につくマークの描画位置
+
                     const markerStartX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const markerTopX = markerStartX + Const.LASER_WIDTH / 2
                     const markerEndX = markerStartX + Const.LASER_WIDTH
                     const markerTopY = BarHeight * startPos
                     const markerStartY = markerTopY - 18
-                    //始点の輪郭線の描画位置
+
                     const startSmallerX = (Const.TOTAL_LANE_WIDTH - Const.LASER_LANE_WIDTH) * startLane
                     const startLargerX = startSmallerX + Const.LASER_WIDTH
                     const startY = BarHeight * startPos
                     if (d[0] == DeviceNames["L"]) {
-                        setTransform(ctx, true, false);//左端を原点にする
+                        setTransform(ctx, true, false);
                         ctx.fillStyle = VolColors["L"]
                         ctx.strokeStyle = VolBorderColors["L"]
                     } else if (d[0] == DeviceNames["R"]) {
-                        setTransform(ctx, false, true);//右端を原点にする
+                        setTransform(ctx, false, true);
                         ctx.fillStyle = VolColors["R"]
                         ctx.strokeStyle = VolBorderColors["R"]
                     }
@@ -454,15 +468,15 @@
                     strokePath.moveTo(startSmallerX, startY)
                     strokePath.lineTo(startLargerX, startY)
                 }
-                //直角　パスの作成を先送りにし、始点位置の情報だけ追加でキープする
+
                 else if (d[0] == "VERTICAL") {
                     if (previous[0] == "VERTICAL") { console.error("直角同士が隣接しています") }
                     previousVerticalStartLane = Number(previous[2])
                 }
-                else if (d[0] == "STRAIGHT") {
+                else if (d[0].slice(0,8) == "STRAIGHT") {
                     let startPosDelay = 0
                     if (previous[0] == "VERTICAL") {
-                        //先送りされていた直角を描画し、直線つまみの始点を32分遅らせる
+
                         const pos = Fraction.stringToNumber(previous[1])
                         const startLane = previousVerticalStartLane
                         const endLane = Number(previous[2])
@@ -491,9 +505,9 @@
                         strokePath.moveTo(endX, endY)
                         strokePath.lineTo(endX, startY)
                         strokePath.lineTo(startLargerX, startY)
-                        startPosDelay = 1 / 32//始点の遅れ
+                        startPosDelay = 1 / 32
                     }
-                    //通常のレーザーのパスを作る
+
                     const startPos = Fraction.stringToNumber(previous[1]) + startPosDelay
                     const endPos = Fraction.stringToNumber(d[1])
                     const startLane = Number(previous[2])
@@ -517,9 +531,9 @@
                     strokePath.moveTo(endLargerX, endY)
                     strokePath.lineTo(startLargerX, startY)
                 }
-                else if (d[0].includes("CURVE")) {//曲線つまみ
-                    if (previous[0] == "VERTICAL") {//始点が直角と同時の場合　不完全
-                        //直角のパス用座標
+                else if (d[0].includes("CURVE")) {
+                    if (previous[0] == "VERTICAL") {
+
                         const verticalPos = Fraction.stringToNumber(previous[1])
                         const verticalStartLane = previousVerticalStartLane
                         const verticalEndLane = Number(previous[2])
@@ -531,7 +545,7 @@
                         const verticalStartY = BarHeight * verticalPos
                         const verticalEndY = verticalStartY + BarHeight / 32
                         const verticalParallelY = verticalStartY + Const.LASER_VERTICAL_HEIGHT
-                        //曲線のパス用座標
+
                         const startPos = Fraction.stringToNumber(previous[1])
                         const endPos = Fraction.stringToNumber(d[1])
                         const startLane = Number(previous[2])
@@ -550,28 +564,28 @@
                         let endCpSmallerX
                         let endCpLargerX
                         let endCpY
-                        if (d[0].includes("INOUT")) {//入りも出も垂直方向の曲線
+                        if (d[0].includes("INOUT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = (startY + endY) / 2
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
-                        } else if (d[0].includes("IN")) {//入りが垂直方向の曲線
+                        } else if (d[0].includes("IN")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = (startY + endY) / 2
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = endY
-                        } else if (d[0].includes("OUT")) {//出が垂直方向の曲線
+                        } else if (d[0].includes("OUT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = startY
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
-                        } else if (d[0].includes("STRAIGHT")) {//曲線の仕様で描く直線
+                        } else if (d[0].includes("STRAIGHT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = startY
@@ -621,7 +635,7 @@
                             strokePath.bezierCurveTo(endCpSmallerX, endCpY, startCpSmallerX, startCpY, startSmallerX, startY)
                             strokePath.lineTo(verticalStartLargerX, verticalStartY)
                         }
-                    } else {//ただの曲線
+                    } else {
                         const startPos = Fraction.stringToNumber(previous[1])
                         const endPos = Fraction.stringToNumber(d[1])
                         const startLane = Number(previous[2])
@@ -640,28 +654,28 @@
                         let endCpSmallerX
                         let endCpLargerX
                         let endCpY
-                        if (d[0].includes("INOUT")) {//入りも出も垂直方向の曲線
+                        if (d[0].includes("INOUT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = (startY + endY) / 2
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
-                        } else if (d[0].includes("IN")) {//入りが垂直方向の曲線
+                        } else if (d[0].includes("IN")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = (startY + endY) / 2
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = endY
-                        } else if (d[0].includes("OUT")) {//出が垂直方向の曲線
+                        } else if (d[0].includes("OUT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = startY
                             endCpSmallerX = endSmallerX
                             endCpLargerX = endLargerX
                             endCpY = (startY + endY) / 2
-                        } else if (d[0].includes("STRAIGHT")) {//曲線の仕様で描く直線
+                        } else if (d[0].includes("STRAIGHT")) {
                             startCpSmallerX = startSmallerX
                             startCpLargerX = startLargerX
                             startCpY = startY
@@ -671,7 +685,7 @@
                         } else {
                             console.error("カーブのタイプ指定が見つかりません")
                         }
-                        //曲線の描画
+
                         const path = new Path2D()
                         path.moveTo(startSmallerX, startY)
                         path.bezierCurveTo(startCpSmallerX, startCpY, endCpSmallerX, endCpY, endSmallerX, endY)
@@ -690,8 +704,8 @@
                 }
                 previous = d
             }))
-            // previousがVERTICALなら終点直角のパスをまるごと加える
-            // それ以外ならstrokeで終端を閉じる
+
+
             if (previous[0] == "VERTICAL") {
                 const pos = Fraction.stringToNumber(previous[1])
                 const startLane = previousVerticalStartLane
@@ -729,7 +743,7 @@
                 strokePath.moveTo(endSmallerX, endY)
                 strokePath.lineTo(endLargerX, endY)
             }
-            //パスを実際に描画
+
             ctx.fill(fillPath)
             ctx.stroke(strokePath)
         })
@@ -739,16 +753,16 @@
         osc.width = 0
         osc.height = 0
         osc.remove()
-        delete osc
+        //delete osc
     }
-    function placeChips(ctx, data) {//チップノーツの描画
-        const hashOfChipFX = {}//FXチップの上に乗ったBTチップを小さく表示するための連想配列
+    function placeChips(ctx, data) {
+        const hashOfChipFX = {}
         data.forEach(d => {
             if (d[0].includes(ButtonNames["L"]) && !d[0].includes(ButtonNames["L"] + "SE")) {
                 placeChipFX(ctx, "L", Fraction.stringToNumber(d[1]), false)
                 const posFraction = new Fraction(d[1])
                 let keyExists = false
-                //タイミングをキーとして、同じタイミングのキーがすでに追加されていればそこに文字を継ぎ足し、ループが終わっても見つからなければ要素を追加する
+
                 Object.keys(hashOfChipFX).forEach(k => {
                     const keyFraction = new Fraction(k)
                     if (Fraction.Equal(keyFraction, posFraction)) {
@@ -810,7 +824,7 @@
             if (d[0].includes(ButtonNames["A"])) {
                 let fxExists = false
                 const posFraction = new Fraction(d[1])
-                //タイミングをキーとして、同じタイミングのキーがすでに追加されており、それが重なる位置のFXチップであればBTの幅を小さくする
+
                 Object.keys(hashOfChipFX).forEach(k => {
                     const keyFraction = new Fraction(k)
                     if (Fraction.Equal(keyFraction, posFraction)) {
@@ -854,19 +868,19 @@
             }
         })
     }
-    function placeBpm(ctx, data) {//BPM表記
+    function placeBpm(ctx, data) {
 
         ctx.font = Const.BPM_FONT
         ctx.textAlign = "right"
         ctx.setTransform(1, 0, 0, 1, (ctx.canvas.width - Const.TOTAL_LANE_WIDTH) / 2, ctx.canvas.height - Const.MARGIN_HEIGHT_LOWER)
         let previousBpm
-        data.forEach(d => {//[BPM、タイミング]
+        data.forEach(d => {
             ctx.fillStyle = previousBpm ? previousBpm > Number(d[0]) ? Const.BPM_LOWER_COLOR : previousBpm < Number(d[0]) ? Const.BPM_UPPER_COLOR : Const.BPM_NORMAL_COLOR : Const.BPM_NORMAL_COLOR
             previousBpm = Number(d[0])
             ctx.fillText(d[0], 0, -BarHeight * Fraction.stringToNumber(d[1]));
         })
     }
-    //個々のノーツの描画用関数
+
     function placeLongFX(ctx, buttonName, startPos, endPos) {
         let fillRect1;
         const fillRect2 = BarHeight * startPos;
@@ -881,7 +895,7 @@
         } else {
             console.error(`FXButtonName "${buttonName}"は存在しません`)
         }
-        setTransform(ctx, false, false);//Y軸反転、図中のX軸中央、Y軸下端に原点移動
+        setTransform(ctx, false, false);
         ctx.fillStyle = Const.LONG_FX_COLOR
         ctx.fillRect(fillRect1, fillRect2, fillRect3, fillRect4)
 
@@ -906,7 +920,7 @@
         } else {
             console.error(`BTButtonName "${buttonName}"は存在しません`)
         }
-        setTransform(ctx, false, false);//Y軸反転、図中のX軸中央、Y軸下端に原点移動
+        setTransform(ctx, false, false);
         ctx.fillStyle = Const.LONG_BT_COLOR
         ctx.fillRect(fillRect1, fillRect2, fillRect3, fillRect4)
 
@@ -914,7 +928,7 @@
     function placeChipFX(ctx, buttonName, pos, isSE) {
         setTransform(ctx, false, false);
         let fillRect1;
-        const fillRect2 = BarHeight * pos// - Const.CHIP_FX_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
+        const fillRect2 = BarHeight * pos
         let fillRect3;
         const fillRect4 = Const.CHIP_FX_HEIGHT;
         if (buttonName == "L") {
@@ -937,7 +951,7 @@
     function placeChipBT(ctx, buttonName, pos, onChipFX) {
         setTransform(ctx, false, false);
         let fillRect1;
-        const fillRect2 = BarHeight * pos// - Const.CHIP_BT_HEIGHT / 2;//実際の表示に近づくがレーザーやロングとずれる
+        const fillRect2 = BarHeight * pos
         let fillRect3;
         const fillRect4 = Const.CHIP_BT_HEIGHT;
         ctx.fillStyle = Const.CHIP_BT_COLOR
